@@ -4,6 +4,8 @@ extends SceneTree
 
 const CATALOG: FishCatalog = preload("res://data/fish_catalog.tres")
 const GEAR: GearStats = preload("res://data/gear/bamboo_rod.tres")
+const GEAR_CATALOG: GearCatalog = preload("res://data/gear_catalog.tres")
+const Balance := preload("res://tests/balance_report.gd")
 const DT := 1.0 / 60.0
 const MAX_TIME := 180.0
 const RUNS := 100
@@ -17,7 +19,7 @@ func _initialize() -> void:
 	test_missed_bite()
 	test_idle_lets_fish_escape()
 	test_always_reeling_snaps_strong_fish()
-	test_bot_lands_fish()
+	test_balance_curve()
 	print("\n%s" % ("ВСЕ ТЕСТЫ ПРОЙДЕНЫ" if _failures == 0 else "ПРОВАЛОВ: %d" % _failures))
 	quit(1 if _failures > 0 else 0)
 
@@ -54,24 +56,24 @@ func test_always_reeling_snaps_strong_fish() -> void:
 	_check(snapped > RUNS * 0.9, "сом рвёт леску, если тупо мотать (%d%%)" % (snapped * 100 / RUNS))
 
 
-func test_bot_lands_fish() -> void:
-	print("\nБаланс: бот, стартовая удочка, макс. вес, заброс 12 м")
+## Кривая сложности для «человека» (реакция ~0.25 с): обычные рыбы ловятся
+## всегда, редкие требуют апгрейда, лучшая удочка вытаскивает всех.
+func test_balance_curve() -> void:
+	var rods := GEAR_CATALOG.rods
 	for fish in CATALOG.fish:
-		var caught := 0
-		var total_time := 0.0
-		for i in RUNS:
-			var s := _session(fish.id, 1.0, i)
-			var t := _fight_time(s)
-			if s.state == FishingSession.State.CAUGHT:
-				caught += 1
-				total_time += t
-		var rate := caught * 100 / RUNS
-		print("  %-14s %-12s поймано %3d%%  среднее время %.1f с" % [
-			fish.display_name, fish.rarity_name(), rate, total_time / maxi(caught, 1)])
-		if fish.rarity <= FishData.Rarity.RARE:
-			_check(rate == 100, "бот всегда вытаскивает: %s" % fish.display_name)
+		var rates: Array[float] = []
+		for rod in rods:
+			rates.append(Balance.catch_rate(fish, rod, 100))
+		print("  %-14s %s" % [fish.display_name, "  ".join(rates.map(func(r: float) -> String: return "%3d%%" % roundi(r * 100.0)))])
+		if fish.rarity <= FishData.Rarity.UNCOMMON:
+			_check(rates[0] >= 0.95, "%s ловится почти всегда даже бамбуковой" % fish.display_name)
 		else:
-			_check(rate >= 30, "%s ловится хотя бы иногда" % fish.display_name)
+			_check(rates[0] <= 0.8, "%s на бамбуковой — испытание" % fish.display_name)
+		_check(rates.back() >= 0.9, "%s ловится лучшей удочкой" % fish.display_name)
+		var monotonic := true
+		for i in range(1, rates.size()):
+			monotonic = monotonic and rates[i] >= rates[i - 1] - 0.05
+		_check(monotonic, "%s: каждая удочка не хуже предыдущей" % fish.display_name)
 
 
 ## Сессия с конкретной рыбой; weight_norm 0..1 внутри диапазона вида.

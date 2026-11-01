@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="FishData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/fish_data.gd" id="1_fish"]
+
+[resource]
+script = ExtResource("1_fish")
+id = &"perch"
+display_name = "Окунь"
+description = "Полосатый хищник. Маленький, но задиристый."
+rarity = 0
+color = Color(0.608, 0.749, 0.227, 1)
+min_weight_kg = 0.2
+max_weight_kg = 1.2
+price_per_kg = 25.0
+strength = 0.3
+thrash_rate = 0.35
+stamina = 5.0
+spawn_weight = 80.0
+habitats = Array[StringName]([&"lake"])

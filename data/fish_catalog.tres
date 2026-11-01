@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="FishCatalog" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/fish_catalog.gd" id="1_cat"]
+[ext_resource type="Script" path="res://scripts/data/fish_data.gd" id="1_fish"]
+[ext_resource type="Resource" path="res://data/fish/roach.tres" id="2_roach"]
+[ext_resource type="Resource" path="res://data/fish/perch.tres" id="3_perch"]
+[ext_resource type="Resource" path="res://data/fish/bream.tres" id="4_bream"]
+[ext_resource type="Resource" path="res://data/fish/pike.tres" id="5_pike"]
+[ext_resource type="Resource" path="res://data/fish/catfish.tres" id="6_catfish"]
+[ext_resource type="Resource" path="res://data/fish/golden_carp.tres" id="7_golden_carp"]
+
+[resource]
+script = ExtResource("1_cat")
+fish = Array[ExtResource("1_fish")]([ExtResource("2_roach"), ExtResource("3_perch"), ExtResource("4_bream"), ExtResource("5_pike"), ExtResource("6_catfish"), ExtResource("7_golden_carp")])

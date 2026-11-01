@@ -1,0 +1,70 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/world/player.gd" id="1_player"]
+
+[sub_resource type="CapsuleShape3D" id="shape"]
+radius = 0.35
+height = 1.6
+
+[sub_resource type="StandardMaterial3D" id="body_mat"]
+albedo_color = Color(0.93, 0.45, 0.25, 1)
+
+[sub_resource type="CapsuleMesh" id="body_mesh"]
+material = SubResource("body_mat")
+radius = 0.35
+height = 1.4
+
+[sub_resource type="StandardMaterial3D" id="skin_mat"]
+albedo_color = Color(0.98, 0.82, 0.66, 1)
+
+[sub_resource type="SphereMesh" id="head_mesh"]
+material = SubResource("skin_mat")
+radius = 0.26
+height = 0.52
+
+[sub_resource type="StandardMaterial3D" id="hat_mat"]
+albedo_color = Color(0.95, 0.85, 0.35, 1)
+
+[sub_resource type="CylinderMesh" id="hat_mesh"]
+material = SubResource("hat_mat")
+top_radius = 0.12
+bottom_radius = 0.42
+height = 0.22
+
+[sub_resource type="StandardMaterial3D" id="rod_mat"]
+albedo_color = Color(0.55, 0.38, 0.2, 1)
+
+[sub_resource type="CylinderMesh" id="rod_mesh"]
+material = SubResource("rod_mat")
+top_radius = 0.015
+bottom_radius = 0.035
+height = 1.35
+
+[node name="Player" type="CharacterBody3D"]
+script = ExtResource("1_player")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
+shape = SubResource("shape")
+
+[node name="Model" type="Node3D" parent="."]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+
+[node name="Body" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+mesh = SubResource("body_mesh")
+
+[node name="Head" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
+mesh = SubResource("head_mesh")
+
+[node name="Hat" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.82, 0)
+mesh = SubResource("hat_mesh")
+
+[node name="Rod" type="MeshInstance3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 0.669, -0.743, 0, 0.743, 0.669, 0.3, 1.55, 0.7)
+mesh = SubResource("rod_mesh")
+
+[node name="RodTip" type="Marker3D" parent="Model"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.3, 2.0, 1.2)

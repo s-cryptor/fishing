@@ -1,0 +1,226 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/world/fishing_water.gd" id="1_water"]
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://scenes/tree.tscn" id="3_tree"]
+[ext_resource type="Script" path="res://scripts/world/camera_rig.gd" id="4_camera"]
+[ext_resource type="Script" path="res://scripts/fishing/bobber.gd" id="5_bobber"]
+[ext_resource type="Script" path="res://scripts/fishing/fishing_line.gd" id="6_line"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="7_hud"]
+[ext_resource type="Script" path="res://scripts/fishing/fishing_controller.gd" id="8_controller"]
+
+[sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
+sky_top_color = Color(0.32, 0.58, 0.88, 1)
+sky_horizon_color = Color(0.72, 0.84, 0.95, 1)
+ground_bottom_color = Color(0.15, 0.35, 0.5, 1)
+ground_horizon_color = Color(0.72, 0.84, 0.95, 1)
+
+[sub_resource type="Sky" id="sky"]
+sky_material = SubResource("sky_mat")
+
+[sub_resource type="Environment" id="env"]
+background_mode = 2
+sky = SubResource("sky")
+ambient_light_source = 3
+ambient_light_energy = 0.8
+tonemap_mode = 2
+
+[sub_resource type="StandardMaterial3D" id="water_mat"]
+albedo_color = Color(0.16, 0.5, 0.68, 1)
+roughness = 0.15
+
+[sub_resource type="PlaneMesh" id="water_mesh"]
+material = SubResource("water_mat")
+size = Vector2(300, 300)
+
+[sub_resource type="StandardMaterial3D" id="sand_mat"]
+albedo_color = Color(0.93, 0.83, 0.6, 1)
+
+[sub_resource type="CylinderMesh" id="sand_mesh"]
+material = SubResource("sand_mat")
+top_radius = 12.6
+bottom_radius = 13.8
+height = 2.0
+radial_segments = 48
+
+[sub_resource type="StandardMaterial3D" id="grass_mat"]
+albedo_color = Color(0.45, 0.72, 0.35, 1)
+
+[sub_resource type="CylinderMesh" id="grass_mesh"]
+material = SubResource("grass_mat")
+top_radius = 11.2
+bottom_radius = 11.4
+height = 0.2
+radial_segments = 48
+
+[sub_resource type="CylinderShape3D" id="island_shape"]
+height = 2.0
+radius = 12.6
+
+[sub_resource type="StandardMaterial3D" id="wall_mat"]
+albedo_color = Color(0.96, 0.92, 0.82, 1)
+
+[sub_resource type="BoxMesh" id="wall_mesh"]
+material = SubResource("wall_mat")
+size = Vector3(4, 2.6, 3.4)
+
+[sub_resource type="StandardMaterial3D" id="roof_mat"]
+albedo_color = Color(0.75, 0.3, 0.25, 1)
+
+[sub_resource type="PrismMesh" id="roof_mesh"]
+material = SubResource("roof_mat")
+size = Vector3(4.8, 1.6, 4)
+
+[sub_resource type="StandardMaterial3D" id="door_mat"]
+albedo_color = Color(0.42, 0.28, 0.18, 1)
+
+[sub_resource type="BoxMesh" id="door_mesh"]
+material = SubResource("door_mat")
+size = Vector3(0.9, 1.6, 0.1)
+
+[sub_resource type="BoxShape3D" id="house_shape"]
+size = Vector3(4, 2.6, 3.4)
+
+[sub_resource type="StandardMaterial3D" id="bobber_mat"]
+albedo_color = Color(0.9, 0.15, 0.15, 1)
+
+[sub_resource type="SphereMesh" id="bobber_mesh"]
+material = SubResource("bobber_mat")
+radius = 0.13
+height = 0.26
+
+[sub_resource type="StandardMaterial3D" id="bobber_top_mat"]
+albedo_color = Color(0.97, 0.97, 0.97, 1)
+
+[sub_resource type="CylinderMesh" id="bobber_top_mesh"]
+material = SubResource("bobber_top_mat")
+top_radius = 0.02
+bottom_radius = 0.05
+height = 0.2
+
+[sub_resource type="StandardMaterial3D" id="ripple_mat"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(1, 1, 1, 0.6)
+
+[sub_resource type="TorusMesh" id="ripple_mesh"]
+material = SubResource("ripple_mat")
+inner_radius = 0.42
+outer_radius = 0.5
+
+[node name="Main" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("env")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.819, -0.47, 0.329, 0, 0.574, 0.819, -0.574, -0.671, 0.47, 0, 20, 0)
+shadow_enabled = true
+
+[node name="Lake" type="Node3D" parent="."]
+script = ExtResource("1_water")
+
+[node name="Water" type="MeshInstance3D" parent="Lake"]
+mesh = SubResource("water_mesh")
+
+[node name="Island" type="StaticBody3D" parent="."]
+
+[node name="Sand" type="MeshInstance3D" parent="Island"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.55, 0)
+mesh = SubResource("sand_mesh")
+
+[node name="Grass" type="MeshInstance3D" parent="Island"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+mesh = SubResource("grass_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Island"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+shape = SubResource("island_shape")
+
+[node name="House" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.5, 2)
+
+[node name="Walls" type="MeshInstance3D" parent="House"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
+mesh = SubResource("wall_mesh")
+
+[node name="Roof" type="MeshInstance3D" parent="House"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.4, 0)
+mesh = SubResource("roof_mesh")
+
+[node name="Door" type="MeshInstance3D" parent="House"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0.8, 1.72)
+mesh = SubResource("door_mesh")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="House"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
+shape = SubResource("house_shape")
+
+[node name="Trees" type="Node3D" parent="."]
+
+[node name="Tree1" parent="Trees" instance=ExtResource("3_tree")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.5, -4)
+
+[node name="Tree2" parent="Trees" instance=ExtResource("3_tree")]
+transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, -6.5, 0.5, -5)
+
+[node name="Tree3" parent="Trees" instance=ExtResource("3_tree")]
+transform = Transform3D(0.9, 0, 0, 0, 0.9, 0, 0, 0, 0.9, 7.5, 0.5, 3)
+
+[node name="Tree4" parent="Trees" instance=ExtResource("3_tree")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0.5, 6)
+
+[node name="Tree5" parent="Trees" instance=ExtResource("3_tree")]
+transform = Transform3D(1.3, 0, 0, 0, 1.3, 0, 0, 0, 1.3, 3, 0.5, 7.5)
+
+[node name="Tree6" parent="Trees" instance=ExtResource("3_tree")]
+transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 8.5, 0.5, -1)
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, -9)
+
+[node name="CameraRig" type="Node3D" parent="." node_paths=PackedStringArray("target")]
+script = ExtResource("4_camera")
+target = NodePath("../Player")
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, 15)
+fov = 40.0
+
+[node name="Bobber" type="Node3D" parent="."]
+transform = Transform3D(1.6, 0, 0, 0, 1.6, 0, 0, 0, 1.6, 0, 0, 0)
+script = ExtResource("5_bobber")
+
+[node name="Float" type="MeshInstance3D" parent="Bobber"]
+mesh = SubResource("bobber_mesh")
+
+[node name="Top" type="MeshInstance3D" parent="Bobber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.18, 0)
+mesh = SubResource("bobber_top_mesh")
+
+[node name="Ripple" type="MeshInstance3D" parent="Bobber"]
+top_level = true
+mesh = SubResource("ripple_mesh")
+
+[node name="BiteMark" type="Label3D" parent="Bobber"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0)
+billboard = 1
+no_depth_test = true
+modulate = Color(1, 0.88, 0.25, 1)
+text = "!"
+font_size = 160
+outline_size = 24
+
+[node name="FishingLine" type="MeshInstance3D" parent="."]
+script = ExtResource("6_line")
+
+[node name="Hud" parent="." instance=ExtResource("7_hud")]
+
+[node name="FishingController" type="Node" parent="." node_paths=PackedStringArray("player", "water", "hud", "bobber", "line", "camera_rig")]
+script = ExtResource("8_controller")
+player = NodePath("../Player")
+water = NodePath("../Lake")
+hud = NodePath("../Hud")
+bobber = NodePath("../Bobber")
+line = NodePath("../FishingLine")
+camera_rig = NodePath("../CameraRig")

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="GearStats" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/gear_stats.gd" id="1_gear"]
+
+[resource]
+script = ExtResource("1_gear")
+display_name = "Бамбуковая удочка"

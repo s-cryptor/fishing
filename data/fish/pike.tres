@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="FishData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/fish_data.gd" id="1_fish"]
+
+[resource]
+script = ExtResource("1_fish")
+id = &"pike"
+display_name = "Щука"
+description = "Резкая и злая. Рывки частые: не зевай с подмоткой."
+rarity = 2
+color = Color(0.435, 0.561, 0.271, 1)
+min_weight_kg = 1.5
+max_weight_kg = 8.0
+price_per_kg = 30.0
+strength = 0.6
+thrash_rate = 0.5
+stamina = 9.0
+spawn_weight = 15.0
+habitats = Array[StringName]([&"lake"])

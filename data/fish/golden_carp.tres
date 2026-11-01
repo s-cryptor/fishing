@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="FishData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/fish_data.gd" id="1_fish"]
+
+[resource]
+script = ExtResource("1_fish")
+id = &"golden_carp"
+display_name = "Золотой карп"
+description = "Говорят, он исполняет желания. Или просто очень дорого стоит."
+rarity = 4
+color = Color(1.000, 0.773, 0.192, 1)
+min_weight_kg = 2.0
+max_weight_kg = 6.0
+price_per_kg = 400.0
+strength = 0.7
+thrash_rate = 0.6
+stamina = 12.0
+spawn_weight = 1.0
+habitats = Array[StringName]([&"lake"])

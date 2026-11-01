@@ -1,0 +1,57 @@
+; Engine configuration file.
+
+config_version=5
+
+[application]
+
+config/name="Тихая гавань"
+config/description="Кроссплатформенная 3D-рыбалка (прототип)"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.7", "Mobile")
+config/icon="res://icon.svg"
+
+[autoload]
+
+DebugTools="*res://scripts/debug/debug_tools.gd"
+GameState="*res://scripts/core/game_state.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=4
+
+[input]
+
+move_left={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"device":-1,"physical_keycode":65), Object(InputEventKey,"device":-1,"physical_keycode":4194319), Object(InputEventJoypadMotion,"device":-1,"axis":0,"axis_value":-1.0)]
+}
+move_right={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"device":-1,"physical_keycode":68), Object(InputEventKey,"device":-1,"physical_keycode":4194321), Object(InputEventJoypadMotion,"device":-1,"axis":0,"axis_value":1.0)]
+}
+move_forward={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"device":-1,"physical_keycode":87), Object(InputEventKey,"device":-1,"physical_keycode":4194320), Object(InputEventJoypadMotion,"device":-1,"axis":1,"axis_value":-1.0)]
+}
+move_back={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"device":-1,"physical_keycode":83), Object(InputEventKey,"device":-1,"physical_keycode":4194322), Object(InputEventJoypadMotion,"device":-1,"axis":1,"axis_value":1.0)]
+}
+fish_action={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"device":-1,"physical_keycode":32), Object(InputEventJoypadButton,"device":-1,"button_index":0)]
+}
+toggle_collection={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"device":-1,"physical_keycode":67)]
+}
+
+[rendering]
+
+renderer/rendering_method="mobile"
+renderer/rendering_method.web="gl_compatibility"
+anti_aliasing/quality/msaa_3d=2

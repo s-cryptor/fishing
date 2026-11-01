@@ -35,6 +35,8 @@ func _ready() -> void:
 		_refresh_wallet())
 	GameState.inventory_changed.connect(_refresh_wallet)
 	GameState.gear_changed.connect(_refresh_gear)
+	GameState.order_completed.connect(func(order: Dictionary) -> void:
+		toast("Заказ выполнен: %s, +%d монет" % [order["giver"], int(order["reward"])]))
 	_sell_button.pressed.connect(_on_sell_pressed)
 	_shop_button.pressed.connect(_open_shop)
 	%CollectionButton.pressed.connect(_toggle_collection)

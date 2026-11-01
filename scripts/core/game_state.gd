@@ -6,6 +6,8 @@ extends Node
 signal money_changed(money: int)
 signal inventory_changed
 signal gear_changed
+signal orders_changed
+signal order_completed(order: Dictionary)
 
 const CATALOG: FishCatalog = preload("res://data/fish_catalog.tres")
 const GEAR_CATALOG: GearCatalog = preload("res://data/gear_catalog.tres")
@@ -23,6 +25,7 @@ var inventory: Array[Dictionary] = []
 var collection: Dictionary = {}
 var owned_gear: Array[String] = []
 var equipped_gear_id := ""
+var orders := OrderBook.new(CATALOG)
 
 var _store := SaveStore.new(DebugTools.save_path if DebugTools.save_path else "user://save.json")
 
@@ -40,8 +43,17 @@ func register_catch(fish: FishData, weight_kg: float) -> bool:
 	entry["best_kg"] = maxf(entry["best_kg"], weight_kg)
 	collection[key] = entry
 	inventory.append({"fish_id": key, "weight_kg": weight_kg})
+	var completed := orders.register_catch(fish, weight_kg)
+	for order in completed:
+		money += int(order["reward"])
+	orders.refill()
 	_save()
 	inventory_changed.emit()
+	orders_changed.emit()
+	for order in completed:
+		order_completed.emit(order)
+	if not completed.is_empty():
+		money_changed.emit(money)
 	return is_new
 
 
@@ -95,6 +107,7 @@ func _save() -> void:
 		"collection": collection,
 		"owned_gear": owned_gear,
 		"equipped_gear": equipped_gear_id,
+		"orders": orders.to_dict(),
 	})
 
 
@@ -109,3 +122,6 @@ func _load() -> void:
 	equipped_gear_id = data.get("equipped_gear", starter)
 	if gear_catalog.get_rod(StringName(equipped_gear_id)) == null:
 		equipped_gear_id = starter
+	# До v3 заказов не было — refill выдаст первые.
+	orders.load_dict(data.get("orders", {}))
+	orders.refill()

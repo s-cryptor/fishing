@@ -21,6 +21,7 @@ func _initialize() -> void:
 	test_always_reeling_snaps_strong_fish()
 	test_luck_brings_rare_fish()
 	test_bite_schedule()
+	test_orders()
 	test_balance_curve()
 	print("\n%s" % ("ВСЕ ТЕСТЫ ПРОЙДЕНЫ" if _failures == 0 else "ПРОВАЛОВ: %d" % _failures))
 	quit(1 if _failures > 0 else 0)
@@ -56,6 +57,40 @@ func test_always_reeling_snaps_strong_fish() -> void:
 		if s.state == FishingSession.State.SNAPPED:
 			snapped += 1
 	_check(snapped > RUNS * 0.9, "сом рвёт леску, если тупо мотать (%d%%)" % (snapped * 100 / RUNS))
+
+
+func test_orders() -> void:
+	var book := OrderBook.new(CATALOG)
+	book.refill()
+	_check(book.orders.size() == OrderBook.ACTIVE_ORDERS, "выдано %d заказа" % OrderBook.ACTIVE_ORDERS)
+	var again := OrderBook.new(CATALOG)
+	again.refill()
+	_check(again.orders == book.orders, "заказы детерминированы")
+	for i in OrderBook.TUTORIAL_ORDERS:
+		var first_fish := CATALOG.get_fish(StringName(book.orders[i]["fish_id"]))
+		_check(first_fish.rarity == FishData.Rarity.COMMON, "обучающий заказ %d — на обычную рыбу" % (i + 1))
+
+	var feasible := true
+	for i in 500:
+		var order := book.generate(i)
+		var fish := CATALOG.get_fish(StringName(order["fish_id"]))
+		feasible = feasible and order["min_kg"] < fish.max_weight_kg and order["reward"] > 0
+	_check(feasible, "требуемый вес всегда достижим")
+
+	var order: Dictionary = book.orders[0]
+	var fish := CATALOG.get_fish(StringName(order["fish_id"]))
+	book.register_catch(fish, order["min_kg"] - 0.05)
+	_check(int(order["progress"]) == 0, "лёгкая рыба не засчитывается")
+	var completed: Array[Dictionary] = []
+	for i in int(order["count"]):
+		completed = book.register_catch(fish, order["min_kg"] + 0.01)
+	_check(completed.size() == 1 and completed[0] == order and not order in book.orders,
+			"заказ выполняется ровно на нужной рыбе")
+	_check(book.refill() and book.orders.size() == OrderBook.ACTIVE_ORDERS, "на место выполненного приходит новый")
+
+	var restored := OrderBook.new(CATALOG)
+	restored.load_dict(JSON.parse_string(JSON.stringify(book.to_dict())))
+	_check(restored.orders.size() == book.orders.size() and restored.issued == book.issued, "заказы переживают сохранение")
 
 
 func test_bite_schedule() -> void:

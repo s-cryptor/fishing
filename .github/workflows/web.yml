@@ -46,6 +46,7 @@ jobs:
 
       - name: Экспорт в веб
         run: |
+          ls -R ~/.local/share/godot/export_templates
           mkdir -p build/web
           ~/godot/godot --headless --path . --export-release Web build/web/index.html
           test -f build/web/index.wasm

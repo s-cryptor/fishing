@@ -86,21 +86,6 @@ static func jingle(notes: Array[int] = [0, 4, 7, 12]) -> AudioStreamWAV:
 	return _to_wav(samples)
 
 
-## Фон: мягкий плеск воды — сглаженный шум, зацикленный.
-static func water_ambience(duration := 4.0) -> AudioStreamWAV:
-	var rng := _rng(5)
-	var samples := PackedFloat32Array()
-	var filtered := 0.0
-	var count := int(duration * MIX_RATE)
-	for i in count:
-		var t := float(i) / count
-		filtered = lerpf(filtered, rng.randf_range(-1.0, 1.0), 0.02)
-		# Медленная «волна» громкости; на краях одинаковая, чтобы шов петли не щёлкал.
-		var swell := 0.6 + 0.4 * sin(t * TAU * 2.0)
-		samples.append(filtered * swell * 3.0)
-	return _to_wav(samples, true)
-
-
 static func _envelope(t: float, attack: float) -> float:
 	if t < attack:
 		return t / attack

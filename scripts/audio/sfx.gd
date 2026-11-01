@@ -1,6 +1,6 @@
 extends Node
 ## Звуки игры. Короткие эффекты играют через небольшой пул плееров,
-## треск катушки и фон — через отдельные зацикленные плееры.
+## треск катушки — через отдельный зацикленный плеер.
 
 const POOL_SIZE := 6
 
@@ -8,7 +8,6 @@ var _streams: Dictionary[StringName, AudioStream] = {}
 var _pool: Array[AudioStreamPlayer] = []
 var _next := 0
 var _reel: AudioStreamPlayer
-var _ambience: AudioStreamPlayer
 
 
 func _ready() -> void:
@@ -31,12 +30,6 @@ func _ready() -> void:
 	_reel.stream = SfxSynth.reel_loop()
 	_reel.volume_db = -10.0
 	add_child(_reel)
-
-	_ambience = AudioStreamPlayer.new()
-	_ambience.stream = SfxSynth.water_ambience()
-	_ambience.volume_db = -22.0
-	add_child(_ambience)
-	_ambience.play()
 
 
 func play(sound: StringName, volume_db := 0.0, pitch := 1.0) -> void:

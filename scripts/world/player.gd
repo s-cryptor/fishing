@@ -12,6 +12,10 @@ var can_move := true
 @onready var rod_tip: Marker3D = $Model/RodTip
 
 
+func _ready() -> void:
+	add_to_group(&"player")
+
+
 func _physics_process(delta: float) -> void:
 	var input := Input.get_vector(&"move_left", &"move_right", &"move_forward", &"move_back")
 	if not can_move:

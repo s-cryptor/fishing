@@ -4,4 +4,13 @@
 
 [resource]
 script = ExtResource("1_gear")
+id = &"bamboo"
 display_name = "Бамбуковая удочка"
+description = "Лёгкая и надёжная. С неё все начинают."
+price = 0
+line_strength = 1.0
+reel_speed = 1.8
+max_cast_m = 14.0
+max_line_m = 25.0
+bite_time_mult = 1.0
+luck = 0.0

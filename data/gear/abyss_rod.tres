@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="GearStats" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/gear_stats.gd" id="1_gear"]
+
+[resource]
+script = ExtResource("1_gear")
+id = &"abyss"
+display_name = "Глубинная удочка"
+description = "Для тех, кто охотится на хозяев омута. Выдержит даже сома."
+price = 2000
+line_strength = 1.8
+reel_speed = 3.0
+max_cast_m = 24.0
+max_line_m = 60.0
+bite_time_mult = 0.7
+luck = 1.5

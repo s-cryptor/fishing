@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/fishing/fishing_line.gd" id="6_line"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="7_hud"]
 [ext_resource type="Script" path="res://scripts/fishing/fishing_controller.gd" id="8_controller"]
+[ext_resource type="PackedScene" path="res://scenes/shop_stall.tscn" id="9_stall"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
 sky_top_color = Color(0.32, 0.58, 0.88, 1)
@@ -156,10 +157,14 @@ mesh = SubResource("door_mesh")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
 shape = SubResource("house_shape")
 
+[node name="ShopStall" parent="." node_paths=PackedStringArray("hud") instance=ExtResource("9_stall")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0.5, -6)
+hud = NodePath("../Hud")
+
 [node name="Trees" type="Node3D" parent="."]
 
 [node name="Tree1" parent="Trees" instance=ExtResource("3_tree")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.5, -4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.5, -1.5)
 
 [node name="Tree2" parent="Trees" instance=ExtResource("3_tree")]
 transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, -6.5, 0.5, -5)

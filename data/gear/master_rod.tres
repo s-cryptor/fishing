@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="GearStats" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/gear_stats.gd" id="1_gear"]
+
+[resource]
+script = ExtResource("1_gear")
+id = &"master"
+display_name = "Удочка мастера"
+description = "Работа старого мастера с маяка. Рыба будто сама идёт на крючок."
+price = 600
+line_strength = 1.45
+reel_speed = 2.6
+max_cast_m = 20.0
+max_line_m = 45.0
+bite_time_mult = 0.8
+luck = 0.8

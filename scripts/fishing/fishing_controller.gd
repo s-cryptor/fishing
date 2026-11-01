@@ -87,8 +87,10 @@ func _release_cast() -> void:
 		return
 	session.state_changed.connect(_on_session_state_changed)
 	session.thrash_started.connect(bobber.splash)
+	session.thrash_started.connect(Sfx.play.bind(&"thrash", -4.0))
 
 	phase = Phase.CASTING
+	Sfx.play(&"whoosh")
 	hud.set_hint("")
 	bobber.cast(player.rod_tip.global_position, landing, CAST_FLIGHT_TIME)
 	line.attach(player.rod_tip, bobber)
@@ -101,6 +103,7 @@ func _on_bobber_landed() -> void:
 		return
 	phase = Phase.SESSION
 	line.slack = 0.6
+	Sfx.play(&"splash", -6.0)
 	hud.set_hint("Ждём поклёвку… Нажми {action}, чтобы смотать")
 
 
@@ -123,6 +126,7 @@ func _update_session(delta: float) -> void:
 	if session == null or session.state != FishingSession.State.FIGHTING:
 		return
 
+	Sfx.set_reel(reeling, session.tension)
 	bobber.anchor = _origin + _cast_dir * session.distance
 	bobber.thrashing = session.is_thrashing
 	line.slack = 1.0 - clampf(session.tension * 1.5, 0.0, 1.0)
@@ -133,9 +137,11 @@ func _on_session_state_changed(state: FishingSession.State) -> void:
 	match state:
 		FishingSession.State.BITING:
 			bobber.mode = Bobber.Mode.BITE
+			Sfx.play(&"plop")
 			hud.set_hint("Клюёт! Жми {action}!")
 		FishingSession.State.FIGHTING:
 			bobber.mode = Bobber.Mode.FIGHT
+			Sfx.play(&"splash", -3.0, 1.3)
 			hud.show_fight()
 			hud.set_hint("Держи {action} — подматывать. Отпускай, когда леска в красной зоне")
 		FishingSession.State.CAUGHT:
@@ -145,6 +151,7 @@ func _on_session_state_changed(state: FishingSession.State) -> void:
 			if _spot:
 				_spot.deplete()
 			_end_session()
+			Sfx.play(&"new_species" if is_new else &"catch")
 			phase = Phase.RESULT
 			hud.set_hint("")
 			hud.show_catch(fish, weight, is_new)
@@ -153,6 +160,7 @@ func _on_session_state_changed(state: FishingSession.State) -> void:
 		FishingSession.State.ESCAPED:
 			_fail("Леска провисла — рыба сошла с крючка")
 		FishingSession.State.SNAPPED:
+			Sfx.play(&"snap")
 			_fail("Леска оборвалась!")
 
 
@@ -163,6 +171,7 @@ func _fail(message: String) -> void:
 
 
 func _end_session() -> void:
+	Sfx.set_reel(false)
 	session = null
 	_spot = null
 	bobber.retract()

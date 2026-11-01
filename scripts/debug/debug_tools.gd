@@ -14,6 +14,7 @@ extends Node
 ##   --hold=NAME         держать input action всё время (проверка ходьбы)
 ##   --hour=H            начать в H часов (0..24)
 ##   --day-length=SEC    длительность игровых суток
+##   --mute              без звука (включается сам при --shots)
 ##   При --quit-after в лог печатается позиция игрока.
 
 var autoplay := false
@@ -34,6 +35,7 @@ var _teleport: Variant = null
 ## [[action, time], ...] — ещё не нажатые.
 var _scheduled_actions: Array = []
 var _held_actions: Array[StringName] = []
+var _mute := false
 
 
 func _init() -> void:
@@ -54,6 +56,7 @@ func _init() -> void:
 			"--hold": _held_actions.append(StringName(value))
 			"--hour": start_hour = value.to_float()
 			"--day-length": day_length = value.to_float()
+			"--mute": _mute = true
 			"--action":
 				var action_time := value.split("@")
 				_scheduled_actions.append([StringName(action_time[0]), action_time[1].to_float()])
@@ -62,6 +65,8 @@ func _init() -> void:
 
 
 func _ready() -> void:
+	if _mute or _shots_dir:
+		AudioServer.set_bus_mute(0, true)
 	# GameState грузится после нас — применяем стартовые правки на первом кадре.
 	_apply_start_overrides.call_deferred()
 

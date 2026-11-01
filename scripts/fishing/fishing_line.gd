@@ -15,6 +15,7 @@ var _mesh := ImmediateMesh.new()
 func _ready() -> void:
 	top_level = true
 	mesh = _mesh
+	cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var material := StandardMaterial3D.new()
 	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	material.albedo_color = Color(0.95, 0.95, 0.9)

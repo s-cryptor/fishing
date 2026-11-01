@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" path="res://scenes/shop_stall.tscn" id="9_stall"]
 [ext_resource type="PackedScene" path="res://scenes/fishing_spot.tscn" id="10_spot"]
 [ext_resource type="Script" path="res://scripts/world/shore_barrier.gd" id="11_shore"]
+[ext_resource type="Script" path="res://scripts/world/day_night_lighting.gd" id="12_daynight"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
 sky_top_color = Color(0.32, 0.58, 0.88, 1)
@@ -119,6 +120,11 @@ environment = SubResource("env")
 [node name="Sun" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.819, -0.47, 0.329, 0, 0.574, 0.819, -0.574, -0.671, 0.47, 0, 20, 0)
 shadow_enabled = true
+
+[node name="DayNightLighting" type="Node" parent="." node_paths=PackedStringArray("sun", "environment")]
+script = ExtResource("12_daynight")
+sun = NodePath("../Sun")
+environment = NodePath("../WorldEnvironment")
 
 [node name="Lake" type="Node3D" parent="."]
 script = ExtResource("1_water")

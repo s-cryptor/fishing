@@ -49,12 +49,12 @@ var _slack_time := 0.0
 var _power: float
 
 
-## Выбирает рыбу и вес по seed. Возвращает null, если в водоёме никто не водится.
+## Выбирает рыбу и вес по seed. Возвращает null, если сейчас здесь никто не клюёт.
 static func create(catalog: FishCatalog, habitat: StringName, p_gear: GearStats,
-		cast_distance: float, seed_value: int) -> FishingSession:
+		cast_distance: float, seed_value: int, phase := DayTime.Phase.DAY) -> FishingSession:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
-	var pool := catalog.for_habitat(habitat)
+	var pool := catalog.biting(habitat, phase)
 	if pool.is_empty():
 		return null
 	var weights := PackedFloat32Array()

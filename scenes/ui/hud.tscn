@@ -47,6 +47,12 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.85, 0.9, 1, 0.85)
 theme_override_font_sizes/font_size = 18
 
+[node name="ClockLabel" type="Label" parent="Root/TopBar/Wallet"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.92, 0.7, 0.9)
+theme_override_font_sizes/font_size = 18
+
 [node name="Spacer" type="Control" parent="Root/TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3

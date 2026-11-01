@@ -80,7 +80,7 @@ func _release_cast() -> void:
 	if _spot:
 		gear = _spot.boost(gear)
 		hud.toast("Рыбное место! Клюнет быстрее")
-	session = FishingSession.create(GameState.catalog, water.habitat, gear, distance, randi())
+	session = FishingSession.create(GameState.catalog, water.habitat, gear, distance, randi(), WorldClock.phase)
 	if session == null:
 		hud.toast("Здесь не водится рыба")
 		_to_idle()

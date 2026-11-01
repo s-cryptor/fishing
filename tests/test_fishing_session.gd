@@ -20,6 +20,7 @@ func _initialize() -> void:
 	test_idle_lets_fish_escape()
 	test_always_reeling_snaps_strong_fish()
 	test_luck_brings_rare_fish()
+	test_bite_schedule()
 	test_balance_curve()
 	print("\n%s" % ("ВСЕ ТЕСТЫ ПРОЙДЕНЫ" if _failures == 0 else "ПРОВАЛОВ: %d" % _failures))
 	quit(1 if _failures > 0 else 0)
@@ -55,6 +56,23 @@ func test_always_reeling_snaps_strong_fish() -> void:
 		if s.state == FishingSession.State.SNAPPED:
 			snapped += 1
 	_check(snapped > RUNS * 0.9, "сом рвёт леску, если тупо мотать (%d%%)" % (snapped * 100 / RUNS))
+
+
+func test_bite_schedule() -> void:
+	for phase in DayTime.Phase.values():
+		_check(not CATALOG.biting(&"lake", phase).is_empty(),
+				"%s: кто-то клюёт" % DayTime.PHASE_NAMES[phase])
+	var night := CATALOG.biting(&"lake", DayTime.Phase.NIGHT).map(func(f: FishData) -> StringName: return f.id)
+	_check(&"catfish" in night and not &"pike" in night, "ночью клюёт сом, но не щука")
+	var day := CATALOG.biting(&"lake", DayTime.Phase.DAY).map(func(f: FishData) -> StringName: return f.id)
+	_check(not &"golden_carp" in day and not &"catfish" in day, "днём нет ни карпа, ни сома")
+	for i in 300:
+		var fish := FishingSession.create(CATALOG, &"lake", GEAR, 10.0, i, DayTime.Phase.NIGHT).fish
+		if not fish.is_active(DayTime.Phase.NIGHT):
+			_check(false, "ночью попался %s" % fish.display_name)
+			return
+	_check(DayTime.phase_for_hour(6.0) == DayTime.Phase.DAWN and DayTime.phase_for_hour(23.5) == DayTime.Phase.NIGHT
+			and DayTime.phase_for_hour(2.0) == DayTime.Phase.NIGHT, "часы → части суток")
 
 
 func test_luck_brings_rare_fish() -> void:

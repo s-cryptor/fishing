@@ -11,6 +11,8 @@ extends Node
 ##   --money=N           выдать N монет при старте
 ##   --teleport=X,Z      поставить игрока в точку острова
 ##   --action=NAME@SEC   нажать input action через SEC секунд (можно несколько раз)
+##   --hold=NAME         держать input action всё время (проверка ходьбы)
+##   При --quit-after в лог печатается позиция игрока.
 
 var autoplay := false
 var touch_ui := false
@@ -27,6 +29,7 @@ var _money := -1
 var _teleport: Variant = null
 ## [[action, time], ...] — ещё не нажатые.
 var _scheduled_actions: Array = []
+var _held_actions: Array[StringName] = []
 
 
 func _init() -> void:
@@ -44,6 +47,7 @@ func _init() -> void:
 			"--teleport":
 				var xz := value.split_floats(",")
 				_teleport = Vector2(xz[0], xz[1])
+			"--hold": _held_actions.append(StringName(value))
 			"--action":
 				var action_time := value.split("@")
 				_scheduled_actions.append([StringName(action_time[0]), action_time[1].to_float()])
@@ -77,7 +81,13 @@ func _process(delta: float) -> void:
 	if _shots_dir and _time >= _next_shot:
 		_next_shot += _shot_every
 		_take_shot()
+	for action in _held_actions:
+		Input.action_press(action)
 	if _quit_after > 0.0 and _time >= _quit_after:
+		var player := get_tree().get_first_node_in_group(&"player") as Node3D
+		if player:
+			print("DEBUG player_position=%s radius=%.2f" % [player.global_position,
+					Vector2(player.global_position.x, player.global_position.z).length()])
 		get_tree().quit()
 
 

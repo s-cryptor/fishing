@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://scripts/fishing/fishing_controller.gd" id="8_controller"]
 [ext_resource type="PackedScene" path="res://scenes/shop_stall.tscn" id="9_stall"]
 [ext_resource type="PackedScene" path="res://scenes/fishing_spot.tscn" id="10_spot"]
+[ext_resource type="Script" path="res://scripts/world/shore_barrier.gd" id="11_shore"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
 sky_top_color = Color(0.32, 0.58, 0.88, 1)
@@ -142,6 +143,9 @@ mesh = SubResource("grass_mesh")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Island"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 shape = SubResource("island_shape")
+
+[node name="ShoreBarrier" type="StaticBody3D" parent="Island"]
+script = ExtResource("11_shore")
 
 [node name="House" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.5, 2)

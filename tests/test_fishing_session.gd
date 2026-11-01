@@ -19,6 +19,7 @@ func _initialize() -> void:
 	test_missed_bite()
 	test_idle_lets_fish_escape()
 	test_always_reeling_snaps_strong_fish()
+	test_luck_brings_rare_fish()
 	test_balance_curve()
 	print("\n%s" % ("ВСЕ ТЕСТЫ ПРОЙДЕНЫ" if _failures == 0 else "ПРОВАЛОВ: %d" % _failures))
 	quit(1 if _failures > 0 else 0)
@@ -54,6 +55,23 @@ func test_always_reeling_snaps_strong_fish() -> void:
 		if s.state == FishingSession.State.SNAPPED:
 			snapped += 1
 	_check(snapped > RUNS * 0.9, "сом рвёт леску, если тупо мотать (%d%%)" % (snapped * 100 / RUNS))
+
+
+func test_luck_brings_rare_fish() -> void:
+	var lucky := GEAR.duplicate() as GearStats
+	lucky.luck += 1.0
+	var plain_rare := _rare_share(GEAR)
+	var lucky_rare := _rare_share(lucky)
+	_check(lucky_rare > plain_rare * 1.5, "удача повышает долю редких: %.1f%% → %.1f%%" % [
+		plain_rare * 100.0, lucky_rare * 100.0])
+
+
+func _rare_share(gear: GearStats) -> float:
+	var rare := 0
+	for i in 2000:
+		if FishingSession.create(CATALOG, &"lake", gear, 10.0, i).fish.rarity >= FishData.Rarity.RARE:
+			rare += 1
+	return rare / 2000.0
 
 
 ## Кривая сложности для «человека» (реакция ~0.25 с): обычные рыбы ловятся

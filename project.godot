@@ -6,6 +6,7 @@ config_version=5
 
 config/name="Тихая гавань"
 config/description="Кроссплатформенная 3D-рыбалка (прототип)"
+config/version="0.1.0"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"

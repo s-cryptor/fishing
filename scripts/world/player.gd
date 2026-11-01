@@ -3,8 +3,6 @@ extends CharacterBody3D
 
 @export var move_speed := 5.0
 @export var turn_speed := 12.0
-## Пока у острова нет коллизии берега, просто не выпускаем игрока за круг.
-@export var walk_radius := 12.0
 
 var can_move := true
 
@@ -33,11 +31,6 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity += get_gravity() * delta
 	move_and_slide()
-
-	var flat := Vector2(global_position.x, global_position.z)
-	if flat.length() > walk_radius:
-		flat = flat.limit_length(walk_radius)
-		global_position = Vector3(flat.x, global_position.y, flat.y)
 
 	if direction.length_squared() > 0.01:
 		var yaw := atan2(direction.x, direction.z)

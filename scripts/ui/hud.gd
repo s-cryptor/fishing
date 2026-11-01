@@ -30,7 +30,9 @@ func _ready() -> void:
 	if touch:
 		_action_name = "кнопку"
 
-	GameState.money_changed.connect(func(_m: int) -> void: _refresh_wallet())
+	GameState.money_changed.connect(func(_m: int) -> void:
+		Sfx.play(&"coins", -4.0)
+		_refresh_wallet())
 	GameState.inventory_changed.connect(_refresh_wallet)
 	GameState.gear_changed.connect(_refresh_gear)
 	_sell_button.pressed.connect(_on_sell_pressed)

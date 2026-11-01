@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="7_hud"]
 [ext_resource type="Script" path="res://scripts/fishing/fishing_controller.gd" id="8_controller"]
 [ext_resource type="PackedScene" path="res://scenes/shop_stall.tscn" id="9_stall"]
+[ext_resource type="PackedScene" path="res://scenes/fishing_spot.tscn" id="10_spot"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
 sky_top_color = Color(0.32, 0.58, 0.88, 1)
@@ -123,6 +124,10 @@ script = ExtResource("1_water")
 
 [node name="Water" type="MeshInstance3D" parent="Lake"]
 mesh = SubResource("water_mesh")
+
+[node name="Spot1" parent="Lake" instance=ExtResource("10_spot")]
+
+[node name="Spot2" parent="Lake" instance=ExtResource("10_spot")]
 
 [node name="Island" type="StaticBody3D" parent="."]
 

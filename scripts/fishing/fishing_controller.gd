@@ -21,6 +21,8 @@ var phase := Phase.IDLE
 var session: FishingSession
 
 var _charge_time := 0.0
+## Рыбное место, куда заброшен поплавок, если попали.
+var _spot: FishingSpot
 var _cast_dir := Vector3.FORWARD
 ## Точка на уровне воды под игроком в момент заброса — от неё считается дистанция.
 var _origin := Vector3.ZERO
@@ -74,6 +76,10 @@ func _release_cast() -> void:
 		_to_idle()
 		return
 
+	_spot = water.spot_at(landing)
+	if _spot:
+		gear = _spot.boost(gear)
+		hud.toast("Рыбное место! Клюнет быстрее")
 	session = FishingSession.create(GameState.catalog, water.habitat, gear, distance, randi())
 	if session == null:
 		hud.toast("Здесь не водится рыба")
@@ -136,6 +142,8 @@ func _on_session_state_changed(state: FishingSession.State) -> void:
 			var fish := session.fish
 			var weight := session.weight_kg
 			var is_new := GameState.register_catch(fish, weight)
+			if _spot:
+				_spot.deplete()
 			_end_session()
 			phase = Phase.RESULT
 			hud.set_hint("")
@@ -156,6 +164,7 @@ func _fail(message: String) -> void:
 
 func _end_session() -> void:
 	session = null
+	_spot = null
 	bobber.retract()
 	line.detach()
 	hud.hide_fight()

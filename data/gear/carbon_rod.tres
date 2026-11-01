@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="GearStats" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/gear_stats.gd" id="1_gear"]
+
+[resource]
+script = ExtResource("1_gear")
+id = &"carbon"
+display_name = "Карбоновая удочка"
+description = "Жёсткий бланк и шустрая катушка. Щука больше не страшна."
+price = 150
+line_strength = 1.2
+reel_speed = 2.2
+max_cast_m = 17.0
+max_line_m = 35.0
+bite_time_mult = 0.9
+luck = 0.3

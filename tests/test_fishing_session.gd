@@ -3,7 +3,9 @@ extends SceneTree
 ## Запуск: godot --headless --path . -s res://tests/test_fishing_session.gd
 
 const CATALOG: FishCatalog = preload("res://data/fish_catalog.tres")
-const GEAR: GearStats = preload("res://data/gear/starter_rod.tres")
+const GEAR: GearStats = preload("res://data/gear/bamboo_rod.tres")
+const GEAR_CATALOG: GearCatalog = preload("res://data/gear_catalog.tres")
+const Balance := preload("res://tests/balance_report.gd")
 const DT := 1.0 / 60.0
 const MAX_TIME := 180.0
 const RUNS := 100
@@ -17,7 +19,10 @@ func _initialize() -> void:
 	test_missed_bite()
 	test_idle_lets_fish_escape()
 	test_always_reeling_snaps_strong_fish()
-	test_bot_lands_fish()
+	test_luck_brings_rare_fish()
+	test_bite_schedule()
+	test_orders()
+	test_balance_curve()
 	print("\n%s" % ("ВСЕ ТЕСТЫ ПРОЙДЕНЫ" if _failures == 0 else "ПРОВАЛОВ: %d" % _failures))
 	quit(1 if _failures > 0 else 0)
 
@@ -54,24 +59,92 @@ func test_always_reeling_snaps_strong_fish() -> void:
 	_check(snapped > RUNS * 0.9, "сом рвёт леску, если тупо мотать (%d%%)" % (snapped * 100 / RUNS))
 
 
-func test_bot_lands_fish() -> void:
-	print("\nБаланс: бот, стартовая удочка, макс. вес, заброс 12 м")
+func test_orders() -> void:
+	var book := OrderBook.new(CATALOG)
+	book.refill()
+	_check(book.orders.size() == OrderBook.ACTIVE_ORDERS, "выдано %d заказа" % OrderBook.ACTIVE_ORDERS)
+	var again := OrderBook.new(CATALOG)
+	again.refill()
+	_check(again.orders == book.orders, "заказы детерминированы")
+	for i in OrderBook.TUTORIAL_ORDERS:
+		var first_fish := CATALOG.get_fish(StringName(book.orders[i]["fish_id"]))
+		_check(first_fish.rarity == FishData.Rarity.COMMON, "обучающий заказ %d — на обычную рыбу" % (i + 1))
+
+	var feasible := true
+	for i in 500:
+		var order := book.generate(i)
+		var fish := CATALOG.get_fish(StringName(order["fish_id"]))
+		feasible = feasible and order["min_kg"] < fish.max_weight_kg and order["reward"] > 0
+	_check(feasible, "требуемый вес всегда достижим")
+
+	var order: Dictionary = book.orders[0]
+	var fish := CATALOG.get_fish(StringName(order["fish_id"]))
+	book.register_catch(fish, order["min_kg"] - 0.05)
+	_check(int(order["progress"]) == 0, "лёгкая рыба не засчитывается")
+	var completed: Array[Dictionary] = []
+	for i in int(order["count"]):
+		completed = book.register_catch(fish, order["min_kg"] + 0.01)
+	_check(completed.size() == 1 and completed[0] == order and not order in book.orders,
+			"заказ выполняется ровно на нужной рыбе")
+	_check(book.refill() and book.orders.size() == OrderBook.ACTIVE_ORDERS, "на место выполненного приходит новый")
+
+	var restored := OrderBook.new(CATALOG)
+	restored.load_dict(JSON.parse_string(JSON.stringify(book.to_dict())))
+	_check(restored.orders.size() == book.orders.size() and restored.issued == book.issued, "заказы переживают сохранение")
+
+
+func test_bite_schedule() -> void:
+	for phase in DayTime.Phase.values():
+		_check(not CATALOG.biting(&"lake", phase).is_empty(),
+				"%s: кто-то клюёт" % DayTime.PHASE_NAMES[phase])
+	var night := CATALOG.biting(&"lake", DayTime.Phase.NIGHT).map(func(f: FishData) -> StringName: return f.id)
+	_check(&"catfish" in night and not &"pike" in night, "ночью клюёт сом, но не щука")
+	var day := CATALOG.biting(&"lake", DayTime.Phase.DAY).map(func(f: FishData) -> StringName: return f.id)
+	_check(not &"golden_carp" in day and not &"catfish" in day, "днём нет ни карпа, ни сома")
+	for i in 300:
+		var fish := FishingSession.create(CATALOG, &"lake", GEAR, 10.0, i, DayTime.Phase.NIGHT).fish
+		if not fish.is_active(DayTime.Phase.NIGHT):
+			_check(false, "ночью попался %s" % fish.display_name)
+			return
+	_check(DayTime.phase_for_hour(6.0) == DayTime.Phase.DAWN and DayTime.phase_for_hour(23.5) == DayTime.Phase.NIGHT
+			and DayTime.phase_for_hour(2.0) == DayTime.Phase.NIGHT, "часы → части суток")
+
+
+func test_luck_brings_rare_fish() -> void:
+	var lucky := GEAR.duplicate() as GearStats
+	lucky.luck += 1.0
+	var plain_rare := _rare_share(GEAR)
+	var lucky_rare := _rare_share(lucky)
+	_check(lucky_rare > plain_rare * 1.5, "удача повышает долю редких: %.1f%% → %.1f%%" % [
+		plain_rare * 100.0, lucky_rare * 100.0])
+
+
+func _rare_share(gear: GearStats) -> float:
+	var rare := 0
+	for i in 2000:
+		if FishingSession.create(CATALOG, &"lake", gear, 10.0, i).fish.rarity >= FishData.Rarity.RARE:
+			rare += 1
+	return rare / 2000.0
+
+
+## Кривая сложности для «человека» (реакция ~0.25 с): обычные рыбы ловятся
+## всегда, редкие требуют апгрейда, лучшая удочка вытаскивает всех.
+func test_balance_curve() -> void:
+	var rods := GEAR_CATALOG.rods
 	for fish in CATALOG.fish:
-		var caught := 0
-		var total_time := 0.0
-		for i in RUNS:
-			var s := _session(fish.id, 1.0, i)
-			var t := _fight_time(s)
-			if s.state == FishingSession.State.CAUGHT:
-				caught += 1
-				total_time += t
-		var rate := caught * 100 / RUNS
-		print("  %-14s %-12s поймано %3d%%  среднее время %.1f с" % [
-			fish.display_name, fish.rarity_name(), rate, total_time / maxi(caught, 1)])
-		if fish.rarity <= FishData.Rarity.RARE:
-			_check(rate == 100, "бот всегда вытаскивает: %s" % fish.display_name)
+		var rates: Array[float] = []
+		for rod in rods:
+			rates.append(Balance.catch_rate(fish, rod, 100))
+		print("  %-14s %s" % [fish.display_name, "  ".join(rates.map(func(r: float) -> String: return "%3d%%" % roundi(r * 100.0)))])
+		if fish.rarity <= FishData.Rarity.UNCOMMON:
+			_check(rates[0] >= 0.95, "%s ловится почти всегда даже бамбуковой" % fish.display_name)
 		else:
-			_check(rate >= 30, "%s ловится хотя бы иногда" % fish.display_name)
+			_check(rates[0] <= 0.8, "%s на бамбуковой — испытание" % fish.display_name)
+		_check(rates.back() >= 0.9, "%s ловится лучшей удочкой" % fish.display_name)
+		var monotonic := true
+		for i in range(1, rates.size()):
+			monotonic = monotonic and rates[i] >= rates[i - 1] - 0.05
+		_check(monotonic, "%s: каждая удочка не хуже предыдущей" % fish.display_name)
 
 
 ## Сессия с конкретной рыбой; weight_norm 0..1 внутри диапазона вида.

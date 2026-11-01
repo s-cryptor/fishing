@@ -13,16 +13,21 @@ enum State { WAITING, BITING, FIGHTING, CAUGHT, MISSED, ESCAPED, SNAPPED }
 
 ## Натяжение, при котором леска рвётся, если держится дольше SNAP_GRACE.
 const SNAP_TENSION := 1.0
-const SNAP_GRACE := 0.4
+const SNAP_GRACE := 0.3
 ## Ниже этого натяжения леска провисает; дольше SLACK_GRACE — рыба сходит.
 const SLACK_TENSION := 0.08
 const SLACK_GRACE := 2.5
 ## Натяжение от самой подмотки, без сопротивления рыбы.
 const REEL_TENSION := 0.35
-const TENSION_RISE_RATE := 2.0
+## Насколько тяга рыбы добавляет натяжения при подмотке и без неё.
+const REEL_PULL_FACTOR := 1.6
+const IDLE_PULL_FACTOR := 0.5
+## Скорость роста натяжения: базовая + доля от тяги (сильная рыба дёргает резче).
+const TENSION_RISE_BASE := 1.5
+const TENSION_RISE_PER_PULL := 2.5
 const TENSION_FALL_RATE := 1.5
 ## Скорость, с которой рыба уходит прочь при полной тяге, м/с.
-const FISH_SWIM_SPEED := 2.5
+const FISH_SWIM_SPEED := 3.5
 const LANDED_DISTANCE := 0.6
 
 var state := State.WAITING
@@ -44,12 +49,12 @@ var _slack_time := 0.0
 var _power: float
 
 
-## Выбирает рыбу и вес по seed. Возвращает null, если в водоёме никто не водится.
+## Выбирает рыбу и вес по seed. Возвращает null, если сейчас здесь никто не клюёт.
 static func create(catalog: FishCatalog, habitat: StringName, p_gear: GearStats,
-		cast_distance: float, seed_value: int) -> FishingSession:
+		cast_distance: float, seed_value: int, phase := DayTime.Phase.DAY) -> FishingSession:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
-	var pool := catalog.for_habitat(habitat)
+	var pool := catalog.biting(habitat, phase)
 	if pool.is_empty():
 		return null
 	var weights := PackedFloat32Array()
@@ -126,9 +131,9 @@ func _tick_fight(delta: float, reeling: bool) -> void:
 	_update_thrash(delta)
 	var pull := current_pull()
 
-	var target := (REEL_TENSION + pull * 0.9) if reeling else pull * 0.35
+	var target := (REEL_TENSION + pull * REEL_PULL_FACTOR) if reeling else pull * IDLE_PULL_FACTOR
 	target /= gear.line_strength
-	var rate := TENSION_RISE_RATE if target > tension else TENSION_FALL_RATE
+	var rate := TENSION_RISE_BASE + pull * TENSION_RISE_PER_PULL if target > tension else TENSION_FALL_RATE
 	tension = move_toward(tension, target, rate * delta)
 
 	var reel_speed := gear.reel_speed if reeling else 0.0

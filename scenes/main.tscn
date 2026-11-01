@@ -8,6 +8,10 @@
 [ext_resource type="Script" path="res://scripts/fishing/fishing_line.gd" id="6_line"]
 [ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="7_hud"]
 [ext_resource type="Script" path="res://scripts/fishing/fishing_controller.gd" id="8_controller"]
+[ext_resource type="PackedScene" path="res://scenes/shop_stall.tscn" id="9_stall"]
+[ext_resource type="PackedScene" path="res://scenes/fishing_spot.tscn" id="10_spot"]
+[ext_resource type="Script" path="res://scripts/world/shore_barrier.gd" id="11_shore"]
+[ext_resource type="Script" path="res://scripts/world/day_night_lighting.gd" id="12_daynight"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
 sky_top_color = Color(0.32, 0.58, 0.88, 1)
@@ -117,11 +121,20 @@ environment = SubResource("env")
 transform = Transform3D(0.819, -0.47, 0.329, 0, 0.574, 0.819, -0.574, -0.671, 0.47, 0, 20, 0)
 shadow_enabled = true
 
+[node name="DayNightLighting" type="Node" parent="." node_paths=PackedStringArray("sun", "environment")]
+script = ExtResource("12_daynight")
+sun = NodePath("../Sun")
+environment = NodePath("../WorldEnvironment")
+
 [node name="Lake" type="Node3D" parent="."]
 script = ExtResource("1_water")
 
 [node name="Water" type="MeshInstance3D" parent="Lake"]
 mesh = SubResource("water_mesh")
+
+[node name="Spot1" parent="Lake" instance=ExtResource("10_spot")]
+
+[node name="Spot2" parent="Lake" instance=ExtResource("10_spot")]
 
 [node name="Island" type="StaticBody3D" parent="."]
 
@@ -136,6 +149,9 @@ mesh = SubResource("grass_mesh")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Island"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
 shape = SubResource("island_shape")
+
+[node name="ShoreBarrier" type="StaticBody3D" parent="Island"]
+script = ExtResource("11_shore")
 
 [node name="House" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0.5, 2)
@@ -156,10 +172,14 @@ mesh = SubResource("door_mesh")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.3, 0)
 shape = SubResource("house_shape")
 
+[node name="ShopStall" parent="." node_paths=PackedStringArray("hud") instance=ExtResource("9_stall")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0.5, -6)
+hud = NodePath("../Hud")
+
 [node name="Trees" type="Node3D" parent="."]
 
 [node name="Tree1" parent="Trees" instance=ExtResource("3_tree")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.5, -4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4, 0.5, -1.5)
 
 [node name="Tree2" parent="Trees" instance=ExtResource("3_tree")]
 transform = Transform3D(1.2, 0, 0, 0, 1.2, 0, 0, 0, 1.2, -6.5, 0.5, -5)

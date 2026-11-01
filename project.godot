@@ -6,6 +6,7 @@ config_version=5
 
 config/name="Тихая гавань"
 config/description="Кроссплатформенная 3D-рыбалка (прототип)"
+config/version="0.1.0"
 run/main_scene="res://scenes/main.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
@@ -14,6 +15,8 @@ config/icon="res://icon.svg"
 
 DebugTools="*res://scripts/debug/debug_tools.gd"
 GameState="*res://scripts/core/game_state.gd"
+WorldClock="*res://scripts/core/world_clock.gd"
+Sfx="*res://scripts/audio/sfx.gd"
 
 [display]
 
@@ -44,6 +47,10 @@ move_back={
 fish_action={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"device":-1,"physical_keycode":32), Object(InputEventJoypadButton,"device":-1,"button_index":0)]
+}
+interact={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"device":-1,"physical_keycode":69), Object(InputEventJoypadButton,"device":-1,"button_index":2)]
 }
 toggle_collection={
 "deadzone": 0.2,

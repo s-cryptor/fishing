@@ -6,6 +6,19 @@
 [ext_resource type="Script" path="res://scripts/ui/action_button.gd" id="5_action"]
 [ext_resource type="Script" path="res://scripts/ui/catch_popup.gd" id="6_popup"]
 [ext_resource type="Script" path="res://scripts/ui/collection_panel.gd" id="7_collection"]
+[ext_resource type="Script" path="res://scripts/ui/shop_panel.gd" id="8_shop"]
+[ext_resource type="Script" path="res://scripts/ui/orders_tracker.gd" id="9_orders"]
+
+[sub_resource type="StyleBoxFlat" id="orders_panel"]
+bg_color = Color(0.08, 0.12, 0.18, 0.6)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 14.0
+content_margin_top = 10.0
+content_margin_right = 14.0
+content_margin_bottom = 10.0
 
 [node name="Hud" type="CanvasLayer"]
 script = ExtResource("1_hud")
@@ -30,28 +43,83 @@ grow_horizontal = 2
 mouse_filter = 2
 theme_override_constants/separation = 12
 
-[node name="MoneyLabel" type="Label" parent="Root/TopBar"]
+[node name="Wallet" type="VBoxContainer" parent="Root/TopBar"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="MoneyLabel" type="Label" parent="Root/TopBar/Wallet"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 26
 text = "Монеты: 0"
+
+[node name="GearLabel" type="Label" parent="Root/TopBar/Wallet"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.9, 1, 0.85)
+theme_override_font_sizes/font_size = 18
+
+[node name="ClockLabel" type="Label" parent="Root/TopBar/Wallet"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.92, 0.7, 0.9)
+theme_override_font_sizes/font_size = 18
 
 [node name="Spacer" type="Control" parent="Root/TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 
+[node name="ShopButton" type="Button" parent="Root/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+focus_mode = 0
+theme_override_colors/font_color = Color(1, 0.88, 0.4, 1)
+text = "Магазин снастей"
+
 [node name="SellButton" type="Button" parent="Root/TopBar"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 0
 focus_mode = 0
 text = "Продать улов (0)"
 
 [node name="CollectionButton" type="Button" parent="Root/TopBar"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 0
 focus_mode = 0
 text = "Коллекция"
+
+[node name="OrdersTracker" type="PanelContainer" parent="Root"]
+layout_mode = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -330.0
+offset_top = 80.0
+offset_right = -16.0
+offset_bottom = 120.0
+grow_horizontal = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("orders_panel")
+script = ExtResource("9_orders")
+
+[node name="VBox" type="VBoxContainer" parent="Root/OrdersTracker"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 2
+
+[node name="Title" type="Label" parent="Root/OrdersTracker/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Заказы соседей"
+
+[node name="OrdersList" type="VBoxContainer" parent="Root/OrdersTracker/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
 
 [node name="ToastLabel" type="Label" parent="Root"]
 unique_name_in_owner = true
@@ -271,3 +339,54 @@ size_flags_horizontal = 3
 theme_override_constants/h_separation = 16
 theme_override_constants/v_separation = 16
 columns = 4
+
+[node name="ShopPanel" type="PanelContainer" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -460.0
+offset_top = -280.0
+offset_right = 460.0
+offset_bottom = 280.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("8_shop")
+
+[node name="VBox" type="VBoxContainer" parent="Root/ShopPanel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Header" type="HBoxContainer" parent="Root/ShopPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="Root/ShopPanel/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 28
+text = "Магазин снастей"
+
+[node name="ShopMoney" type="Label" parent="Root/ShopPanel/VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.4, 1)
+
+[node name="ShopCloseButton" type="Button" parent="Root/ShopPanel/VBox/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Закрыть"
+
+[node name="Scroll" type="ScrollContainer" parent="Root/ShopPanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ShopList" type="VBoxContainer" parent="Root/ShopPanel/VBox/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20

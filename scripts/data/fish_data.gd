@@ -32,6 +32,12 @@ const RARITY_COLORS: Array[Color] = [
 @export_group("Появление")
 @export var spawn_weight := 100.0
 @export var habitats: Array[StringName] = [&"lake"]
+## В какие части суток клюёт (флаги DayTime.Phase).
+@export_flags("Рассвет", "День", "Закат", "Ночь") var active_times := DayTime.ALL_PHASES
+
+
+func is_active(phase: DayTime.Phase) -> bool:
+	return active_times & DayTime.flag(phase) != 0
 
 
 func rarity_name() -> String:

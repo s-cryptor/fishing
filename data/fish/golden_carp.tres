@@ -17,3 +17,4 @@ thrash_rate = 0.6
 stamina = 12.0
 spawn_weight = 1.0
 habitats = Array[StringName]([&"lake"])
+active_times = 5

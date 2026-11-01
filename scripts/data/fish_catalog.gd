@@ -15,3 +15,8 @@ func get_fish(id: StringName) -> FishData:
 
 func for_habitat(habitat: StringName) -> Array[FishData]:
 	return fish.filter(func(f: FishData) -> bool: return habitat in f.habitats)
+
+
+## Кто клюёт в этом водоёме в эту часть суток.
+func biting(habitat: StringName, phase: DayTime.Phase) -> Array[FishData]:
+	return fish.filter(func(f: FishData) -> bool: return habitat in f.habitats and f.is_active(phase))

@@ -7,6 +7,7 @@ var _action_name := "Пробел"
 
 @onready var _money_label: Label = %MoneyLabel
 @onready var _gear_label: Label = %GearLabel
+@onready var _clock_label: Label = %ClockLabel
 @onready var _shop_button: Button = %ShopButton
 @onready var _shop: ShopPanel = %ShopPanel
 @onready var _sell_button: Button = %SellButton
@@ -43,6 +44,10 @@ func _ready() -> void:
 	_shop_button.hide()
 	_refresh_wallet()
 	_refresh_gear()
+
+
+func _process(_delta: float) -> void:
+	_clock_label.text = "%s · %s" % [WorldClock.clock_text(), WorldClock.phase_name()]
 
 
 func _unhandled_input(event: InputEvent) -> void:

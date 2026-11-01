@@ -12,11 +12,15 @@ extends Node
 ##   --teleport=X,Z      поставить игрока в точку острова
 ##   --action=NAME@SEC   нажать input action через SEC секунд (можно несколько раз)
 ##   --hold=NAME         держать input action всё время (проверка ходьбы)
+##   --hour=H            начать в H часов (0..24)
+##   --day-length=SEC    длительность игровых суток
 ##   При --quit-after в лог печатается позиция игрока.
 
 var autoplay := false
 var touch_ui := false
 var save_path := ""
+var start_hour := -1.0
+var day_length := 0.0
 
 var _shots_dir := ""
 var _shot_every := 2.0
@@ -48,6 +52,8 @@ func _init() -> void:
 				var xz := value.split_floats(",")
 				_teleport = Vector2(xz[0], xz[1])
 			"--hold": _held_actions.append(StringName(value))
+			"--hour": start_hour = value.to_float()
+			"--day-length": day_length = value.to_float()
 			"--action":
 				var action_time := value.split("@")
 				_scheduled_actions.append([StringName(action_time[0]), action_time[1].to_float()])

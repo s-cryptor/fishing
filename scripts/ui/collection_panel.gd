@@ -56,7 +56,9 @@ func _make_card(fish: FishData, entry: Dictionary) -> Control:
 
 	if caught:
 		var stats := Label.new()
-		stats.text = "Поймано: %d\nРекорд: %.2f кг" % [int(entry["count"]), float(entry["best_kg"])]
+		stats.text = "Поймано: %d\nРекорд: %.2f кг\nКлюёт: %s" % [
+			int(entry["count"]), float(entry["best_kg"]), DayTime.describe(fish.active_times)]
+		stats.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		stats.add_theme_font_size_override("font_size", 16)
 		box.add_child(stats)
 	return box

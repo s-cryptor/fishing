@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="GearCatalog" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/gear_catalog.gd" id="1_cat"]
+[ext_resource type="Script" path="res://scripts/data/gear_stats.gd" id="1_gear"]
+[ext_resource type="Resource" path="res://data/gear/bamboo_rod.tres" id="2_bamboo"]
+[ext_resource type="Resource" path="res://data/gear/carbon_rod.tres" id="3_carbon"]
+[ext_resource type="Resource" path="res://data/gear/master_rod.tres" id="4_master"]
+[ext_resource type="Resource" path="res://data/gear/abyss_rod.tres" id="5_abyss"]
+
+[resource]
+script = ExtResource("1_cat")
+rods = Array[ExtResource("1_gear")]([ExtResource("2_bamboo"), ExtResource("3_carbon"), ExtResource("4_master"), ExtResource("5_abyss")])

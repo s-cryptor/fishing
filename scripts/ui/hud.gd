@@ -6,6 +6,9 @@ signal catch_popup_closed
 var _action_name := "Пробел"
 
 @onready var _money_label: Label = %MoneyLabel
+@onready var _gear_label: Label = %GearLabel
+@onready var _shop_button: Button = %ShopButton
+@onready var _shop: ShopPanel = %ShopPanel
 @onready var _sell_button: Button = %SellButton
 @onready var _hint_label: Label = %HintLabel
 @onready var _toast_label: Label = %ToastLabel
@@ -28,23 +31,39 @@ func _ready() -> void:
 
 	GameState.money_changed.connect(func(_m: int) -> void: _refresh_wallet())
 	GameState.inventory_changed.connect(_refresh_wallet)
+	GameState.gear_changed.connect(_refresh_gear)
 	_sell_button.pressed.connect(_on_sell_pressed)
-	%CollectionButton.pressed.connect(_collection.toggle)
+	_shop_button.pressed.connect(_open_shop)
+	%CollectionButton.pressed.connect(_toggle_collection)
 	_catch_popup.closed.connect(catch_popup_closed.emit)
 
 	_charge_bar.hide()
 	_fight_panel.hide()
 	_toast_label.modulate.a = 0.0
+	_shop_button.hide()
 	_refresh_wallet()
+	_refresh_gear()
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"toggle_collection"):
-		_collection.toggle()
+		_toggle_collection()
+	elif event.is_action_pressed(&"interact") and _shop_button.visible:
+		if _shop.visible:
+			_shop.hide()
+		else:
+			_open_shop()
 
 
 func is_modal_open() -> bool:
-	return _collection.visible or _catch_popup.visible
+	return _collection.visible or _catch_popup.visible or _shop.visible
+
+
+## Игрок подошёл к прилавку или отошёл от него.
+func set_shop_available(available: bool) -> void:
+	_shop_button.visible = available
+	if not available:
+		_shop.hide()
 
 
 ## {action} в тексте заменяется на «Пробел» или «кнопку» в зависимости от устройства.
@@ -100,6 +119,20 @@ func _refresh_wallet() -> void:
 	var count := GameState.inventory.size()
 	_sell_button.text = "Продать улов (%d)" % count
 	_sell_button.disabled = count == 0
+
+
+func _refresh_gear() -> void:
+	_gear_label.text = GameState.gear.display_name
+
+
+func _open_shop() -> void:
+	_collection.hide()
+	_shop.open()
+
+
+func _toggle_collection() -> void:
+	_shop.hide()
+	_collection.toggle()
 
 
 func _on_sell_pressed() -> void:

@@ -3,7 +3,7 @@ extends SceneTree
 ## Запуск: godot --headless --path . -s res://tests/test_fishing_session.gd
 
 const CATALOG: FishCatalog = preload("res://data/fish_catalog.tres")
-const GEAR: GearStats = preload("res://data/gear/starter_rod.tres")
+const GEAR: GearStats = preload("res://data/gear/bamboo_rod.tres")
 const DT := 1.0 / 60.0
 const MAX_TIME := 180.0
 const RUNS := 100

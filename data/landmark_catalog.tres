@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="LandmarkCatalog" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/landmark_catalog.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/data/landmark_data.gd" id="2"]
+[ext_resource type="Resource" path="res://data/landmarks/harbor_light.tres" id="3"]
+[ext_resource type="Resource" path="res://data/landmarks/boatkeepers_hut.tres" id="4"]
+[ext_resource type="Resource" path="res://data/landmarks/stone_sail.tres" id="5"]
+
+[resource]
+script = ExtResource("1")
+landmarks = Array[ExtResource("2")]([ExtResource("3"), ExtResource("4"), ExtResource("5")])

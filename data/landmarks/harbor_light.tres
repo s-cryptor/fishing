@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LandmarkData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/landmark_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"harbor_light"
+title = "Маяк тихой гавани"
+habitat = &"lake"
+description = "На ступеньке лежит потрёпанный дневник смотрителя. На первой странице — рисунок золотой рыбы и подпись: «Самое красивое в гавани видно тем, кто не торопится домой».\n\nНа полях отмечены рассвет и закат. Остальные страницы пахнут солью и тёплым деревом."
+clue = "Ищи маяк на юго-восточной стороне родного острова."
+position = Vector3(7, 0.5, 6)
+kind = 0

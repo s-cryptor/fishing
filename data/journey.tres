@@ -28,4 +28,6 @@ goals = Array[Dictionary]([{
 "id": "fjord_visit", "title": "Северный ветер", "hint": "В манграх найди восточный причал и отправляйся во фьорд.", "metric": "fjord_visit", "target": 1, "reward": 100
 }, {
 "id": "fjord_collection", "title": "Тайны холодных вод", "hint": "Открой все 3 вида Ледяного фьорда.", "metric": "fjord_species", "target": 3, "reward": 400
+}, {
+"id": "harbor_explorer", "title": "Истории трёх берегов", "hint": "Осмотри маяк, хижину лодочника и каменную арку. Записи появятся в открытиях.", "metric": "landmarks", "target": 3, "reward": 120
 }])

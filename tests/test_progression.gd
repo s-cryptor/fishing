@@ -15,6 +15,7 @@ func _run() -> void:
 	state.collection.clear()
 	state.inventory.clear()
 	state.claimed_goals.clear()
+	state.discovered_landmarks.clear()
 	state.visited_biomes.assign(["home_lake"])
 	state.sales = 0
 	var starter := String(state.gear_catalog.rods[0].id)

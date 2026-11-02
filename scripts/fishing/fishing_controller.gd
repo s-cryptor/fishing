@@ -90,12 +90,18 @@ func _release_cast() -> void:
 		return
 
 	_spot = water.spot_at(landing)
-	if _spot:
-		gear = _spot.boost(gear)
-		hud.toast("Рыбное место! Клюнет быстрее")
+	if _spot and _spot.reserve():
+		var precise := _spot.is_precise(landing)
+		gear = _spot.boost(gear, precise)
+		hud.toast("Точный заброс · бонус удачи и клёва" if precise else "Рыбное место · клюнет быстрее")
+	else:
+		_spot = null
 	session = FishingSession.create(GameState.catalog, water.habitat_id(), gear, distance, randi(), WorldClock.phase,
 		water.landing_distance(_origin, _cast_dir, distance))
 	if session == null:
+		if _spot:
+			_spot.release()
+			_spot = null
 		hud.toast("Здесь не водится рыба")
 		_to_idle()
 		return
@@ -201,6 +207,8 @@ func _fail(message: String) -> void:
 func _end_session() -> void:
 	Sfx.set_reel(false)
 	session = null
+	if _spot:
+		_spot.release()
 	_spot = null
 	bobber.retract()
 	line.detach()
@@ -248,7 +256,8 @@ func _update_preview() -> void:
 	var point := Vector3(player.global_position.x, water.water_level + 0.08, player.global_position.z) + player.facing_direction() * distance
 	var valid := water.is_water(point)
 	var spot := water.spot_at(point) if valid else null
+	var precise := spot != null and spot.is_precise(point)
 	_preview.global_position = point
 	_preview_material.albedo_color = Color("#ffda78") if spot else (Color("#8fe8cb") if valid else Color("#f08080"))
-	_preview_label.text = "%.1f м%s" % [distance, " · рыбное место" if spot else ("" if valid else " · суша")]
+	_preview_label.text = "%.1f м%s" % [distance, " · точный заброс!" if precise else (" · рыбное место" if spot else ("" if valid else " · суша"))]
 	_preview.show()

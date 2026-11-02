@@ -17,6 +17,7 @@ const GEAR_CATALOG: GearCatalog = preload("res://data/gear_catalog.tres")
 const JOURNEY: JourneyData = preload("res://data/journey.tres")
 const BAIT: BaitData = preload("res://data/bait.tres")
 const BOAT: BoatStats = preload("res://data/boats/explorer.tres")
+const BIOMES: BiomeCatalog = preload("res://data/biome_catalog.tres")
 
 var catalog: FishCatalog = CATALOG
 var gear_catalog: GearCatalog = GEAR_CATALOG
@@ -118,7 +119,10 @@ func upgrade_boat() -> bool:
 		return false
 	money -= BOAT.price
 	boat_upgraded = true
+	orders.available_habitats.assign([&"lake", &"mangrove", &"fjord"])
+	_claim_goals()
 	_supplies_updated(true)
+	journey_changed.emit()
 	return true
 
 
@@ -190,6 +194,8 @@ func journey_progress(metric: String) -> int:
 		"species": return collection.size()
 		"rods": return owned_gear.size()
 		"mangrove_visit": return 1 if "mangrove_shallows" in visited_biomes else 0
+		"fjord_visit": return 1 if "ice_fjord" in visited_biomes else 0
+		"boat": return 1 if boat_upgraded else 0
 	var count := 0
 	for fish in catalog.fish:
 		var entry: Dictionary = collection.get(String(fish.id), {})
@@ -199,6 +205,7 @@ func journey_progress(metric: String) -> int:
 			"catches": count += int(entry["count"])
 			"lake_species": count += 1 if &"lake" in fish.habitats else 0
 			"mangrove_species": count += 1 if &"mangrove" in fish.habitats else 0
+			"fjord_species": count += 1 if &"fjord" in fish.habitats else 0
 			"trophies": count += 1 if is_trophy(fish, float(entry["best_kg"])) else 0
 	return count
 
@@ -260,6 +267,7 @@ func _load() -> void:
 	bait_charges = maxi(0, int(data.get("bait_charges", 0)))
 	bait_enabled = bool(data.get("bait_enabled", false)) and bait_charges > 0
 	boat_upgraded = bool(data.get("boat_upgraded", false))
+	orders.available_habitats.assign([&"lake", &"mangrove", &"fjord"] if boat_upgraded else [&"lake", &"mangrove"])
 	# В сохранениях v1 снастей не было — выдаём стартовую удочку.
 	var starter := String(gear_catalog.rods[0].id)
 	owned_gear.assign(data.get("owned_gear", [starter]))

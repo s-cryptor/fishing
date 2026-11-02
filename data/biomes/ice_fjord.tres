@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"ice_fjord"
+display_name = "Ледяной фьорд"
+habitat = &"fjord"
+description = "Снежные берега и холодная прозрачная вода. Сильной рыбе нужна хорошая снасть."
+accent_color = Color(0.65, 0.86, 1, 1)

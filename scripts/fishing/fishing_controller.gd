@@ -215,6 +215,7 @@ func _create_preview() -> void:
 	_preview_label = Label3D.new()
 	_preview_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	_preview_label.font_size = 48
+	_preview_label.pixel_size = 0.01
 	_preview_label.outline_size = 8
 	_preview_label.position.y = 0.7
 	_preview.add_child(_preview_label)

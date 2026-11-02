@@ -16,6 +16,7 @@ const TUTORIAL_ORDERS := 2
 var orders: Array[Dictionary] = []
 ## Сколько заказов уже выдано: из него получается seed следующего.
 var issued := 0
+var available_habitats: Array[StringName] = [&"lake", &"mangrove"]
 
 var _catalog: FishCatalog
 
@@ -38,7 +39,7 @@ func generate(seed_value: int) -> Dictionary:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(seed_value)
 	# Просим чаще обычную рыбу, но не только её.
-	var pool := _catalog.fish
+	var pool: Array[FishData] = _catalog.fish.filter(_is_available)
 	if seed_value < TUTORIAL_ORDERS:
 		pool = pool.filter(func(f: FishData) -> bool: return f.rarity == FishData.Rarity.COMMON and &"lake" in f.habitats)
 	var weights := PackedFloat32Array()
@@ -62,6 +63,13 @@ func generate(seed_value: int) -> Dictionary:
 		"progress": 0,
 		"reward": roundi(fish.value_for(maxf(min_kg, average_kg)) * count * REWARD_MULT) + 10,
 	}
+
+
+func _is_available(fish: FishData) -> bool:
+	for habitat in fish.habitats:
+		if habitat in available_habitats:
+			return true
+	return false
 
 
 ## Засчитывает улов. Возвращает выполненные заказы (уже убранные из списка).

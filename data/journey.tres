@@ -22,4 +22,10 @@ goals = Array[Dictionary]([{
 "id": "mangrove_collection", "title": "Секреты мангров", "hint": "Открой все 4 вида мангровых отмелей.", "metric": "mangrove_species", "target": 4, "reward": 300
 }, {
 "id": "golden_trophy", "title": "Золотой трофей", "hint": "Поймай рыбу весом не меньше 85% диапазона её вида.", "metric": "trophies", "target": 1, "reward": 100
+}, {
+"id": "explorer_boat", "title": "Попутного ветра", "hint": "Улучши лодку у Луки, чтобы открыть путь на север.", "metric": "boat", "target": 1, "reward": 75
+}, {
+"id": "fjord_visit", "title": "Северный ветер", "hint": "В манграх найди восточный причал и отправляйся во фьорд.", "metric": "fjord_visit", "target": 1, "reward": 100
+}, {
+"id": "fjord_collection", "title": "Тайны холодных вод", "hint": "Открой все 3 вида Ледяного фьорда.", "metric": "fjord_species", "target": 3, "reward": 400
 }])

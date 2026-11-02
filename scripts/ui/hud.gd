@@ -5,6 +5,7 @@ signal catch_popup_closed
 signal travel_requested
 
 var _action_name := "Пробел"
+var _touch_available := false
 
 @onready var _money_label: Label = %MoneyLabel
 @onready var _gear_label: Label = %GearLabel
@@ -27,10 +28,12 @@ var _action_name := "Пробел"
 @onready var _travel_label: Label = %TravelLabel
 
 var _toast_tween: Tween
+var _travel_destination := ""
 
 
 func _ready() -> void:
 	var touch := DisplayServer.is_touchscreen_available() or DebugTools.touch_ui
+	_touch_available = touch
 	_touch_controls.visible = touch
 	if touch:
 		_action_name = "кнопку"
@@ -85,13 +88,15 @@ func set_biome(biome: BiomeData) -> void:
 	_biome_label.modulate = biome.accent_color
 
 
-func set_travel_available(destination_name: String) -> void:
-	_travel_button.text = "Плыть: %s" % destination_name
+func set_travel_available(destination_name: String, locked := false) -> void:
+	_travel_destination = destination_name
+	_travel_button.text = "%s%s" % [destination_name, " · нужна лодка Луки" if locked else " · плыть"]
+	_travel_button.tooltip_text = "Улучши лодку у Луки за %d монет" % GameState.BOAT.price if locked else "Отправиться в путешествие"
 	_travel_button.show()
 
 
 func clear_travel_available(destination_name: String) -> void:
-	if _travel_button.text == "Плыть: %s" % destination_name:
+	if _travel_destination == destination_name:
 		_travel_button.hide()
 
 
@@ -114,6 +119,7 @@ func fade_in() -> void:
 
 func _process(_delta: float) -> void:
 	_clock_label.text = "%s · %s" % [WorldClock.clock_text(), WorldClock.phase_name()]
+	_touch_controls.visible = _touch_available and not is_modal_open()
 
 
 func _unhandled_input(event: InputEvent) -> void:

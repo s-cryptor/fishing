@@ -16,9 +16,14 @@ func _ready() -> void:
 	var tabs := HBoxContainer.new()
 	$VBox.add_child(tabs)
 	$VBox.move_child(tabs, 1)
-	for pair in [["Родное озеро", &"lake"], ["Мангровые отмели", &"mangrove"], ["Путь рыболова", &"journey"]]:
+	var pages: Array = []
+	for biome in GameState.BIOMES.biomes:
+		pages.append([biome.display_name, biome.habitat])
+	pages.append(["Путь рыболова", &"journey"])
+	for pair in pages:
 		var button := Button.new()
 		button.text = pair[0]
+		button.add_theme_font_size_override("font_size", 16)
 		button.focus_mode = Control.FOCUS_NONE
 		button.pressed.connect(func() -> void:
 			_habitat = pair[1]
@@ -49,7 +54,7 @@ func _rebuild() -> void:
 		if not entry.is_empty():
 			known += 1
 		_grid.add_child(_make_card(fish, entry))
-	_header.text = "%s: %d / %d" % ["Родное озеро" if _habitat == &"lake" else "Мангровые отмели", known, pool.size()]
+	_header.text = "%s: %d / %d" % [GameState.BIOMES.for_habitat(_habitat).display_name, known, pool.size()]
 
 
 func _rebuild_journey() -> void:

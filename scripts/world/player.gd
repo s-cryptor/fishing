@@ -43,3 +43,14 @@ func facing_direction() -> Vector3:
 	var forward := _model.global_basis.z
 	forward.y = 0.0
 	return forward.normalized()
+
+
+func fishing_pose(active: bool, charge: float, tension: float, reeling: bool) -> void:
+	_model.fishing = active
+	_model.charge = charge
+	_model.tension = tension
+	_model.reeling = reeling
+
+
+func cast_gesture() -> void:
+	_model.cast_kick = 1.0

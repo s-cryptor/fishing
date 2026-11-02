@@ -8,6 +8,7 @@ extends RefCounted
 
 signal state_changed(new_state: State)
 signal thrash_started
+signal thrash_warned
 
 enum State { WAITING, BITING, FIGHTING, CAUGHT, MISSED, ESCAPED, SNAPPED }
 
@@ -29,6 +30,14 @@ const TENSION_FALL_RATE := 1.5
 ## Скорость, с которой рыба уходит прочь при полной тяге, м/с.
 const FISH_SWIM_SPEED := 3.5
 const LANDED_DISTANCE := 0.6
+## Полсекунды читаемого замаха перед рывком — без изменения его расписания.
+const THRASH_WARNING := 0.45
+## Узкая рабочая зона награждает контроль, а не непрерывное удержание.
+const CONTROL_MIN := 0.42
+const CONTROL_MAX := 0.72
+const CONTROL_BUILD_TIME := 0.65
+const CONTROL_REEL_BONUS := 0.18
+const CONTROL_FATIGUE_BONUS := 0.35
 
 var state := State.WAITING
 var fish: FishData
@@ -39,19 +48,24 @@ var distance: float
 var tension := 0.0
 var stamina: float
 var is_thrashing := false
+var initial_distance: float
+var landing_distance: float
+var control := 0.0
 
 var _rng: RandomNumberGenerator
 var _timer: float
 var _thrash_timer := 0.0
 var _overload_time := 0.0
 var _slack_time := 0.0
+var _warned := false
 ## Сила конкретной особи: сила вида с поправкой на вес.
 var _power: float
 
 
 ## Выбирает рыбу и вес по seed. Возвращает null, если сейчас здесь никто не клюёт.
 static func create(catalog: FishCatalog, habitat: StringName, p_gear: GearStats,
-		cast_distance: float, seed_value: int, phase := DayTime.Phase.DAY) -> FishingSession:
+		cast_distance: float, seed_value: int, phase := DayTime.Phase.DAY,
+		p_landing_distance := LANDED_DISTANCE) -> FishingSession:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
 	var pool := catalog.biting(habitat, phase)
@@ -63,14 +77,16 @@ static func create(catalog: FishCatalog, habitat: StringName, p_gear: GearStats,
 	var picked := pool[rng.rand_weighted(weights)]
 	# Квадрат смещает вес к лёгким особям: крупные встречаются реже.
 	var weight := lerpf(picked.min_weight_kg, picked.max_weight_kg, pow(rng.randf(), 2.0))
-	return FishingSession.new(picked, weight, cast_distance, p_gear, rng)
+	return FishingSession.new(picked, weight, cast_distance, p_gear, rng, p_landing_distance)
 
 
 func _init(p_fish: FishData, p_weight: float, cast_distance: float, p_gear: GearStats,
-		rng: RandomNumberGenerator) -> void:
+		rng: RandomNumberGenerator, p_landing_distance := LANDED_DISTANCE) -> void:
 	fish = p_fish
 	weight_kg = p_weight
 	distance = cast_distance
+	initial_distance = cast_distance
+	landing_distance = clampf(p_landing_distance, 0.0, cast_distance)
 	gear = p_gear
 	_rng = rng
 	stamina = fish.stamina
@@ -87,6 +103,10 @@ func stamina_ratio() -> float:
 	return stamina / fish.stamina
 
 
+func distance_to_land() -> float:
+	return maxf(0.0, distance - landing_distance)
+
+
 func value() -> int:
 	return fish.value_for(weight_kg)
 
@@ -100,6 +120,14 @@ func bite_window() -> float:
 func current_pull() -> float:
 	var fatigue := lerpf(0.3, 1.0, stamina_ratio())
 	return _power * fatigue * (1.0 if is_thrashing else 0.35)
+
+
+func is_telegraphing() -> bool:
+	return state == State.FIGHTING and not is_thrashing and _thrash_timer <= THRASH_WARNING
+
+
+func in_control_zone() -> bool:
+	return state == State.FIGHTING and not is_thrashing and tension >= CONTROL_MIN and tension <= CONTROL_MAX
 
 
 ## Подсечка. Срабатывает только во время поклёвки.
@@ -136,11 +164,15 @@ func _tick_fight(delta: float, reeling: bool) -> void:
 	var rate := TENSION_RISE_BASE + pull * TENSION_RISE_PER_PULL if target > tension else TENSION_FALL_RATE
 	tension = move_toward(tension, target, rate * delta)
 
-	var reel_speed := gear.reel_speed if reeling else 0.0
+	var controlled := reeling and in_control_zone()
+	control = move_toward(control, 1.0 if controlled else 0.0,
+			delta / CONTROL_BUILD_TIME * (1.0 if controlled else 2.0))
+	var bonus := control if controlled else 0.0
+	var reel_speed := gear.reel_speed * (1.0 + bonus * CONTROL_REEL_BONUS) if reeling else 0.0
 	distance = clampf(distance - (reel_speed - pull * FISH_SWIM_SPEED) * delta, 0.0, gear.max_line_m)
 
 	# Под натяжением рыба выдыхается быстрее.
-	stamina = maxf(stamina - delta * (0.3 + tension), 0.0)
+	stamina = maxf(stamina - delta * (0.3 + tension + bonus * CONTROL_FATIGUE_BONUS), 0.0)
 
 	_overload_time = _overload_time + delta if tension >= SNAP_TENSION else 0.0
 	_slack_time = _slack_time + delta if tension <= SLACK_TENSION else 0.0
@@ -149,12 +181,15 @@ func _tick_fight(delta: float, reeling: bool) -> void:
 		_set_state(State.SNAPPED)
 	elif _slack_time >= SLACK_GRACE:
 		_set_state(State.ESCAPED)
-	elif distance <= LANDED_DISTANCE:
+	elif distance <= landing_distance:
 		_set_state(State.CAUGHT)
 
 
 func _update_thrash(delta: float) -> void:
 	_thrash_timer -= delta
+	if not is_thrashing and not _warned and _thrash_timer <= THRASH_WARNING:
+		_warned = true
+		thrash_warned.emit()
 	if _thrash_timer > 0.0:
 		return
 	is_thrashing = not is_thrashing
@@ -162,6 +197,7 @@ func _update_thrash(delta: float) -> void:
 		_thrash_timer = _rng.randf_range(0.6, 1.4)
 		thrash_started.emit()
 	else:
+		_warned = false
 		_thrash_timer = _next_thrash_delay()
 
 

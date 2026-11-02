@@ -9,6 +9,8 @@
 [ext_resource type="Script" path="res://scripts/ui/shop_panel.gd" id="8_shop"]
 [ext_resource type="Script" path="res://scripts/ui/orders_tracker.gd" id="9_orders"]
 [ext_resource type="Script" path="res://scripts/ui/fish_portrait.gd" id="10_portrait"]
+[ext_resource type="Script" path="res://scripts/ui/fight_readout.gd" id="11_fight"]
+[ext_resource type="Script" path="res://scripts/ui/fish_showcase.gd" id="12_showcase"]
 
 [sub_resource type="StyleBoxFlat" id="orders_panel"]
 bg_color = Color(0.94, 0.91, 0.81, 0.96)
@@ -240,7 +242,7 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -260.0
-offset_top = -180.0
+offset_top = -226.0
 offset_right = 260.0
 offset_bottom = -96.0
 grow_horizontal = 2
@@ -265,6 +267,13 @@ custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("3_tension")
+
+[node name="FightReadout" type="Control" parent="Root/FightPanel/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 39)
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("11_fight")
 
 [node name="HintLabel" type="Label" parent="Root"]
 unique_name_in_owner = true
@@ -388,9 +397,9 @@ horizontal_alignment = 1
 
 [node name="Swatch" type="Control" parent="Root/CatchPopup/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 80)
+custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
-script = ExtResource("10_portrait")
+script = ExtResource("12_showcase")
 
 [node name="FishName" type="Label" parent="Root/CatchPopup/VBox"]
 unique_name_in_owner = true

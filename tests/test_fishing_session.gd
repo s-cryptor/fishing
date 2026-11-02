@@ -20,6 +20,9 @@ func _initialize() -> void:
 	test_missed_bite()
 	test_idle_lets_fish_escape()
 	test_always_reeling_snaps_strong_fish()
+	test_thrash_warning()
+	test_control_bonus()
+	test_landing_at_shore()
 	test_luck_brings_rare_fish()
 	test_bite_schedule()
 	test_orders()
@@ -67,6 +70,76 @@ func test_always_reeling_snaps_strong_fish() -> void:
 		if s.state == FishingSession.State.SNAPPED:
 			snapped += 1
 	_check(snapped > RUNS * 0.9, "сом рвёт леску, если тупо мотать (%d%%)" % (snapped * 100 / RUNS))
+
+
+func test_thrash_warning() -> void:
+	var s := _session(&"pike", 0.5, 21)
+	_check(not s.is_telegraphing(), "до подсечки нет ложного предупреждения о рывке")
+	while s.state == FishingSession.State.WAITING:
+		s.tick(DT, false)
+	s.hook()
+	var events: Array[String] = []
+	s.thrash_warned.connect(func() -> void: events.append("warning"))
+	s.thrash_started.connect(func() -> void: events.append("thrash"))
+	var warning_time := -1.0
+	var time := 0.0
+	while not s.is_thrashing and time < 10:
+		s.tick(DT, true)
+		time += DT
+		if s.is_telegraphing() and warning_time < 0:
+			warning_time = time
+	_check(events == ["warning", "thrash"], "перед рывком ровно одно предупреждение")
+	_check(absf(time - warning_time - FishingSession.THRASH_WARNING) < DT * 2,
+		"предупреждение оставляет 0.45 секунды на реакцию")
+	_check(not s.is_telegraphing(), "во время рывка предупреждение снято")
+	# Следующий цикл должен снова предупредить, но не создавать спам каждый кадр.
+	while events.size() < 4 and time < 20 and not s.is_finished():
+		s.tick(DT, s.tension < 0.7)
+		time += DT
+	_check(events == ["warning", "thrash", "warning", "thrash"], "предупреждение повторяется на следующем рывке")
+
+
+func test_control_bonus() -> void:
+	var steady := _session(&"roach", 0.5, 11)
+	var plain := _session(&"roach", 0.5, 11)
+	for s in [steady, plain]:
+		while s.state == FishingSession.State.WAITING:
+			s.tick(DT, false)
+		s.hook()
+		# Изолируем спокойную подмотку от случайного расписания рывков.
+		s._thrash_timer = 20.0
+	for i in 90:
+		plain.control = 0
+		steady.tick(DT, true)
+		plain.tick(DT, true)
+	_check(steady.control > 0.99, "бонус контроля постепенно набирается в светлой зоне")
+	_check(steady.distance < plain.distance and steady.stamina < plain.stamina,
+		"контроль ускоряет подмотку и утомляет рыбу")
+	steady.tick(0.1, false)
+	_check(steady.control < 1.0, "без подмотки накопленный контроль затухает")
+	steady.is_thrashing = true
+	steady.control = 1.0
+	var before := steady.distance
+	var expected_speed := steady.gear.reel_speed - steady.current_pull() * FishingSession.FISH_SWIM_SPEED
+	steady.tick(DT, true)
+	_check(not steady.in_control_zone() and absf(steady.distance - (before - expected_speed * DT)) < 0.001,
+		"рывок отключает бонус: накопить его и мотать сквозь рывок нельзя")
+	var frozen := steady.control
+	steady.state = FishingSession.State.CAUGHT
+	steady.tick(2.0, true)
+	_check(steady.control == frozen and not steady.is_telegraphing(), "завершённая сессия больше не меняется")
+
+
+func test_landing_at_shore() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 13
+	var fish := CATALOG.get_fish(&"roach")
+	var s := FishingSession.new(fish, 0.3, 12.0, GEAR, rng, 4.5)
+	_check(is_equal_approx(s.distance_to_land(), 7.5), "до берега считается оставшаяся водная дистанция")
+	_play(s, AutoPlayer.wants_action)
+	_check(s.state == FishingSession.State.CAUGHT and s.distance > 4.0,
+		"сессия заканчивается у переданной кромки берега")
+	_check(s.distance_to_land() == 0.0, "пойманная рыба находится у берега")
 
 
 func test_orders() -> void:

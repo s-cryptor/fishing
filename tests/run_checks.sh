@@ -25,5 +25,6 @@ run_check --headless --path . -s res://tests/test_cast_aiming.gd -- --save=user:
 run_check --headless --path . -s res://tests/test_cooking.gd -- --save=user://cooking-test.json --mute
 run_check --headless --path . -s res://tests/test_menu_navigation.gd -- --save=user://menu-test.json --mute
 run_check --headless --path . -s res://tests/test_basket.gd -- --save=user://basket-test.json --mute
+run_check --headless --path . -s res://tests/test_camera_view.gd -- --save=user://camera-test.json --mute
 run_check --headless --path . -s res://tests/test_boat_travel.gd -- --save=user://boat-test.json --mute
 run_check --headless --path . -s res://tests/test_progression.gd -- --save=user://progression-test.json --mute

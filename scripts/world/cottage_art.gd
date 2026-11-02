@@ -48,6 +48,19 @@ static func build(parent: Node3D) -> void:
 	art.box(Vector3(-2.04, 1.55, 0.1), Vector3(0.16, 1.0, 1.04), wood)
 	art.box(Vector3(-2.16, 1.55, 0.1), Vector3(0.04, 0.85, 0.06), trim)
 	art.box(Vector3(-2.16, 1.55, 0.1), Vector3(0.04, 0.06, 0.9), trim)
+	# Свободный обзор открывает задний фасад: он тоже должен выглядеть жилым.
+	art.box(Vector3(-0.75, 1.55, -1.76), Vector3(1.16, 1.04, 0.14), wood)
+	art.box(Vector3(-0.75, 1.55, -1.91), Vector3(0.06, 0.86, 0.035), trim)
+	for x in [-1.48, -0.02]:
+		art.box(Vector3(x, 1.55, -1.79), Vector3(0.23, 0.98, 0.1), Color("#507771"))
+	art.box(Vector3(-0.75, 1.55, -1.91), Vector3(0.94, 0.06, 0.035), trim)
+	art.box(Vector3(-0.75, 0.98, -1.88), Vector3(1.3, 0.13, 0.4), wood)
+	for layer in 2:
+		for log_index in 3 - layer:
+			var x := 0.55 + log_index * 0.27 + layer * 0.13
+			var y := 0.25 + layer * 0.23
+			art.tube(Vector3(x, y, -1.75), Vector3(x, y, -2.27), 0.13, wood.darkened(0.08), 0.12, 7)
+			art.tube(Vector3(x, y, -2.275), Vector3(x, y, -2.29), 0.095, Color("#b99b6a"), 0.095, 7)
 	art.instance(parent, "HarborCottage")
 	var lights := Node3D.new()
 	lights.set_script(load("res://scripts/world/cottage_lights.gd"))

@@ -63,6 +63,7 @@ func _process(delta: float) -> void:
 
 
 func _start_charge() -> void:
+	hud.set_fishing_focus(true)
 	phase = Phase.CHARGING
 	_charge_time = 0.0
 	player.can_move = false
@@ -196,9 +197,10 @@ func _on_catch_popup_closed() -> void:
 
 
 func _to_idle() -> void:
+	hud.set_fishing_focus(false)
 	phase = Phase.IDLE
 	player.can_move = true
-	hud.set_hint("Повернись к воде и удерживай {action}, чтобы забросить")
+	hud.show_idle_hint()
 
 
 func _create_preview() -> void:

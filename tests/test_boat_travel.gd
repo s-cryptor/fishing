@@ -16,6 +16,17 @@ func _run() -> void:
 	var controller: Node = scene.get_node("FishingController")
 	var hud: Node = scene.get_node("Hud")
 	var state := root.get_node("GameState")
+	await physics_frame
+	await physics_frame
+	var shore_safe := true
+	var lake := scene.get_node("Lake")
+	for i in 24:
+		var angle := TAU * i / 24.0
+		var outward := Vector3(cos(angle), 0, sin(angle))
+		player.position = outward * 8.0 + Vector3.UP * 0.6
+		player.move_and_collide(outward * 20.0)
+		shore_safe = shore_safe and not lake.is_water(player.position)
+	_check(shore_safe, "неровный берег не выпускает игрока в воду")
 	var pause_menu := scene.get_node("PauseMenu")
 	var clock := root.get_node("WorldClock")
 	pause_menu.toggle()

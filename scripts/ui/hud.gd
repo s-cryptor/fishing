@@ -6,6 +6,7 @@ signal travel_requested
 
 var _action_name := "Пробел"
 var _touch_available := false
+var _fishing_focus := false
 
 @onready var _money_label: Label = %MoneyLabel
 @onready var _gear_label: Label = %GearLabel
@@ -55,6 +56,15 @@ func _ready() -> void:
 	_travel_button.pressed.connect(travel_requested.emit)
 	%CollectionButton.pressed.connect(_toggle_collection)
 	_catch_popup.closed.connect(catch_popup_closed.emit)
+	_sell_button.icon = load("res://assets/ui/fish.svg")
+	%CollectionButton.icon = load("res://assets/ui/book.svg")
+	_shop_button.icon = load("res://assets/ui/chat.svg")
+	_travel_button.icon = load("res://assets/ui/compass.svg")
+	%CoinIcon.texture = load("res://assets/ui/coin.svg")
+	var heading := FontVariation.new()
+	heading.base_font = ThemeDB.fallback_font
+	heading.variation_embolden = 0.4
+	_money_label.add_theme_font_override("font", heading)
 
 	_charge_bar.hide()
 	_fight_panel.hide()
@@ -62,6 +72,7 @@ func _ready() -> void:
 	_shop_button.hide()
 	_travel_button.hide()
 	_travel_fade.hide()
+	%ModalShade.hide()
 	_refresh_wallet()
 	_refresh_gear()
 	_refresh_journey()
@@ -69,7 +80,7 @@ func _ready() -> void:
 
 
 func _refresh_bait() -> void:
-	%BaitButton.visible = GameState.bait_charges > 0
+	%BaitButton.visible = GameState.bait_charges > 0 and not _fishing_focus
 	%BaitButton.text = "Приманка: %s (%d)" % ["ВКЛ" if GameState.bait_enabled else "ВЫКЛ", GameState.bait_charges]
 
 
@@ -85,7 +96,7 @@ func _refresh_journey() -> void:
 
 func set_biome(biome: BiomeData) -> void:
 	_biome_label.text = biome.display_name
-	_biome_label.modulate = biome.accent_color
+	_biome_label.modulate = Color.WHITE
 
 
 func set_travel_available(destination_name: String, locked := false) -> void:
@@ -120,6 +131,15 @@ func fade_in() -> void:
 func _process(_delta: float) -> void:
 	_clock_label.text = "%s · %s" % [WorldClock.clock_text(), WorldClock.phase_name()]
 	_touch_controls.visible = _touch_available and not is_modal_open()
+	_hint_label.visible = not is_modal_open() and not _hint_label.text.is_empty()
+	%ModalShade.visible = _shop.visible or _collection.visible or _catch_popup.visible
+
+
+func set_fishing_focus(active: bool) -> void:
+	_fishing_focus = active
+	%OrdersTracker.visible = not active
+	%JourneyHint.visible = not active
+	_refresh_bait()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -150,6 +170,15 @@ func set_shop_available(available: bool) -> void:
 ## {action} в тексте заменяется на «Пробел» или «кнопку» в зависимости от устройства.
 func set_hint(text: String) -> void:
 	_hint_label.text = text.format({"action": _action_name})
+
+
+func show_idle_hint() -> void:
+	if _touch_available:
+		set_hint("Зажми «ЗАБРОС», затем отпусти")
+	elif not Input.get_connected_joypads().is_empty():
+		set_hint("A / Cross — заброс · X — разговор · Start — пауза")
+	else:
+		set_hint("Удерживай Пробел — заброс · C — коллекция · Esc — пауза")
 
 
 func toast(text: String) -> void:
@@ -196,7 +225,7 @@ func close_catch_popup() -> void:
 
 
 func _refresh_wallet() -> void:
-	_money_label.text = "Монеты: %d" % GameState.money
+	_money_label.text = "%d монет" % GameState.money
 	var count := GameState.inventory.size()
 	_sell_button.text = "Продать улов (%d)" % count
 	_sell_button.disabled = count == 0

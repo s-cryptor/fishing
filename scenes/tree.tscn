@@ -1,5 +1,7 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://scripts/world/tree_visual.gd" id="1_visual"]
+
 [sub_resource type="StandardMaterial3D" id="trunk_mat"]
 albedo_color = Color(0.45, 0.3, 0.18, 1)
 
@@ -24,6 +26,7 @@ height = 1.4
 radius = 0.3
 
 [node name="Tree" type="StaticBody3D"]
+script = ExtResource("1_visual")
 
 [node name="Trunk" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)

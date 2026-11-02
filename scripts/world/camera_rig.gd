@@ -14,7 +14,7 @@ var focus: Node3D
 
 func _ready() -> void:
 	if target:
-		global_position = target.global_position
+		global_position = target.global_position + Vector3(0, 0, 2.5)
 	_camera.look_at(global_position)
 
 
@@ -24,9 +24,11 @@ func _process(delta: float) -> void:
 	var goal := target.global_position
 	if focus and focus.visible:
 		goal = goal.lerp(focus.global_position, 0.5)
+	else:
+		goal += Vector3(0, 0, 2.5)
 	global_position = global_position.lerp(goal, 1.0 - exp(-follow_speed * delta))
 
 
 func snap_to_target() -> void:
 	if target:
-		global_position = target.global_position
+		global_position = target.global_position + Vector3(0, 0, 2.5)

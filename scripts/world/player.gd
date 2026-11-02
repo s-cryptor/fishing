@@ -65,5 +65,5 @@ func cast_gesture() -> void:
 	_model.cast_kick = 1.0
 
 
-func face_direction(direction: Vector3) -> void:
-	_model.rotation.y = atan2(direction.x, direction.z)
+func face_direction(direction: Vector3, weight := 1.0) -> void:
+	_model.rotation.y = lerp_angle(_model.rotation.y, atan2(direction.x, direction.z), weight)

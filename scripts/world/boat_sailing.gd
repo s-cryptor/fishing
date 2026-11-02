@@ -125,7 +125,7 @@ func _physics_process(delta: float) -> void:
 	var can_land := dock != null and _dock_distance(dock) <= 8.5
 	hud.set_sailing_available(can_land, "Причалить · B / E")
 	if dock and camera:
-		var projected := camera.unproject_position(dock.global_position) - get_viewport().get_visible_rect().size * 0.5
+		var projected := direction_to_dock(dock)
 		var arrows := ["→", "↘", "↓", "↙", "←", "↖", "↑", "↗"]
 		var arrow: String = arrows[posmod(roundi(projected.angle() / (PI / 4)), 8)]
 		hud.set_sailing_status("%s  Причал · %d м" % [arrow, roundi(_dock_distance(dock))])
@@ -137,3 +137,13 @@ func _sync_rider() -> void:
 	player.global_position = _rider.global_position
 	if player.can_move:
 		player.face_direction(-global_basis.z)
+
+
+func direction_to_dock(dock: Node3D) -> Vector2:
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return Vector2.ZERO
+	var target := dock.global_position
+	target.y = player.global_position.y
+	# Направление относительно лодки, не центра кадра со смещённой камерой.
+	return camera.unproject_position(target) - camera.unproject_position(player.global_position)

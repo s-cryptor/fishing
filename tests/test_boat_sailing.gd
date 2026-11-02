@@ -23,6 +23,11 @@ func _run() -> void:
 	_check(captain.active and player.ride_target != null, "у причала можно сесть в управляемую лодку")
 	_check(player.get_node("CollisionShape3D").disabled and captain.session.is_safe(captain.session.position),
 		"посадка безопасно отключает береговую коллизию рыбака")
+	var direction_marker := Marker3D.new()
+	scene.add_child(direction_marker)
+	direction_marker.global_position = player.global_position + Vector3.RIGHT * 5
+	var projected: Vector2 = captain.direction_to_dock(direction_marker)
+	_check(projected.x > 0 and absf(projected.y) < 0.01, "стрелка причала считается от лодки, а не смещённого центра кадра")
 	var start: Vector2 = captain.session.position
 	Input.action_press(&"move_right")
 	await create_timer(0.5).timeout

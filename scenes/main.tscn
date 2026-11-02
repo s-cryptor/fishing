@@ -17,6 +17,7 @@
 [ext_resource type="Resource" path="res://data/biomes/mangrove_shallows.tres" id="15_mangrove"]
 [ext_resource type="Shader" path="res://shaders/water.gdshader" id="16_water_shader"]
 [ext_resource type="Script" path="res://scripts/world/island_details.gd" id="17_details"]
+[ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="18_pause"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
 sky_top_color = Color(0.32, 0.58, 0.88, 1)
@@ -302,6 +303,9 @@ outline_size = 24
 script = ExtResource("6_line")
 
 [node name="Hud" parent="." instance=ExtResource("7_hud")]
+
+[node name="PauseMenu" type="CanvasLayer" parent="."]
+script = ExtResource("18_pause")
 
 [node name="FishingController" type="Node" parent="." node_paths=PackedStringArray("player", "water", "hud", "bobber", "line", "camera_rig")]
 script = ExtResource("8_controller")

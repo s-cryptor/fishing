@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/world/boat_dock.gd" id="1_dock"]
 [ext_resource type="Script" path="res://scripts/world/boat_visual.gd" id="2_visual"]
+[ext_resource type="Script" path="res://scripts/world/harbor_lantern.gd" id="3_lantern"]
 
 [sub_resource type="SphereShape3D" id="trigger"]
 radius = 3.0
@@ -32,6 +33,10 @@ script = ExtResource("1_dock")
 
 [node name="Trigger" type="CollisionShape3D" parent="."]
 shape = SubResource("trigger")
+
+[node name="Lantern" type="Node3D" parent="."]
+position = Vector3(-1.2, 0, -1)
+script = ExtResource("3_lantern")
 
 [node name="Pier" type="MeshInstance3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, -1.4)

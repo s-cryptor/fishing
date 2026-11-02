@@ -16,10 +16,20 @@ func _run() -> void:
 	var controller: Node = scene.get_node("FishingController")
 	var hud: Node = scene.get_node("Hud")
 	var state := root.get_node("GameState")
+	var pause_menu := scene.get_node("PauseMenu")
+	var clock := root.get_node("WorldClock")
+	pause_menu.toggle()
+	var hour_before: float = clock.hour
+	await create_timer(0.2).timeout
+	_check(paused and clock.hour == hour_before, "пауза останавливает игровые часы")
+	pause_menu.toggle()
+	_check(not paused, "из паузы можно вернуться в игру")
 	state.bait_charges = 3
 	state.bait_enabled = true
 	player.position = Vector3(0, 0.6, 0)
 	controller._start_charge()
+	hud._toggle_collection()
+	_check(not hud.get_node("Root/CollectionPanel").visible, "коллекция не закрывает заброс")
 	controller._release_cast()
 	_check(state.bait_charges == 3, "заброс на сушу не тратит приманку")
 	player.position = Vector3(-5, 0.6, -9)

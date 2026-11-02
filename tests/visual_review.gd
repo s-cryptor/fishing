@@ -45,6 +45,12 @@ func _run() -> void:
 	clock.hour = 10
 	controller.water = scene.get_node("Lake")
 	hud.set_biome(controller.water.biome)
+	for neighbor in [[Vector3(-7, 0.6, 9), 19, "marta_dusk"], [Vector3(-7, 0.6, 9), 22, "marta_night"], [Vector3(4.5, 0.6, -4), 10, "luka"]]:
+		player.position = neighbor[0]
+		clock.hour = neighbor[1]
+		camera.snap_to_target()
+		await _capture("neighbor_%s" % neighbor[2])
+	clock.hour = 10
 	player.position = Vector3(0, 0.6, -3)
 	camera.snap_to_target()
 	state.collection.clear()
@@ -74,6 +80,26 @@ func _run() -> void:
 		hud._inspect_landmark_entry(data)
 		await _capture("discovery_%s" % data.id)
 		hud.get_node("Root/LandmarkPopup").close()
+	collection.hide()
+	state.inventory.clear()
+	state.active_meal_id = ""
+	state.meal_charges = 0
+	hud.open_kitchen()
+	await _capture("kitchen_empty")
+	state.inventory.assign([{"fish_id": "roach", "weight_kg": 0.12}, {"fish_id": "perch", "weight_kg": 0.25},
+		{"fish_id": "roach", "weight_kg": 0.55}, {"fish_id": "golden_carp", "weight_kg": 5.7}])
+	state.inventory_changed.emit()
+	await _capture("kitchen_ready")
+	# Только демо-состояние, без cook_meal() и записи в файл.
+	state.active_meal_id = "fish_soup"
+	state.meal_charges = 5
+	state.inventory.remove_at(1)
+	state.inventory.remove_at(0)
+	state.supplies_changed.emit()
+	state.inventory_changed.emit()
+	await _capture("kitchen_active")
+	hud.get_node("Root/CookingPanel").hide()
+	await _capture("meal_hud")
 	scene.queue_free()
 	await process_frame
 	print("Визуальная проверка завершена: %s" % _directory)

@@ -28,6 +28,9 @@ func _build() -> void:
 	CottageArt.build(house)
 	HarborProps.garden(self)
 	HarborProps.lilies(self)
+	var kitchen := CampKitchen.new()
+	kitchen.position = Vector3(-4.8, 0.5, 9.6)
+	add_child(kitchen)
 	for data in GameState.LANDMARKS.landmarks:
 		var landmark := LandmarkPoint.new()
 		landmark.data = data

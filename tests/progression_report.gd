@@ -68,6 +68,10 @@ func _reset(state: Node) -> void:
 	state.collection.clear()
 	state.inventory.clear()
 	state.claimed_goals.clear()
+	state.discovered_landmarks.clear()
+	state.active_meal_id = ""
+	state.meal_charges = 0
+	state.meals_cooked = 0
 	state.visited_biomes.assign(["home_lake"])
 	state.sales = 0
 	state.bait_charges = 0

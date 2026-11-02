@@ -5,6 +5,7 @@ signal catch_popup_closed
 signal travel_requested
 signal sailing_requested
 signal landmark_requested
+signal kitchen_requested
 
 var _action_name := "Пробел"
 var _touch_available := false
@@ -15,6 +16,7 @@ var _return_to_collection := false
 var _return_from_landmark := false
 var _nearby_landmark: LandmarkData
 var _hint_template := ""
+var _kitchen_available := false
 
 @onready var _money_label: Label = %MoneyLabel
 @onready var _gear_label: Label = %GearLabel
@@ -36,6 +38,7 @@ var _hint_template := ""
 @onready var _travel_fade: ColorRect = %TravelFade
 @onready var _travel_label: Label = %TravelLabel
 @onready var _landmark_popup: LandmarkPopup = %LandmarkPopup
+@onready var _kitchen: CookingPanel = %CookingPanel
 
 var _toast_tween: Tween
 var _travel_destination := ""
@@ -55,6 +58,8 @@ func _ready() -> void:
 		_hint_label.text = _hint_template.format({"action": _action_name})
 		if _nearby_landmark:
 			set_landmark_available(_nearby_landmark)
+		if _kitchen_available:
+			set_kitchen_available(true)
 		if _sailing_available:
 			set_sailing_available(true, "Причалить · B / E" if _sailing_active else "На воду · B")
 		var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
@@ -91,6 +96,10 @@ func _ready() -> void:
 	_collection.landmark_selected.connect(_inspect_landmark_entry)
 	%LandmarkButton.pressed.connect(landmark_requested.emit)
 	_landmark_popup.closed.connect(_on_landmark_closed)
+	%KitchenButton.pressed.connect(kitchen_requested.emit)
+	_kitchen.meal_prepared.connect(func(meal: MealData) -> void:
+		toast("%s · %s" % [meal.display_name, meal.effect_text()])
+		Sfx.play(&"plop", -6.0, 0.8))
 	_sell_button.icon = load("res://assets/ui/fish.svg")
 	%CollectionButton.icon = load("res://assets/ui/book.svg")
 	_shop_button.icon = load("res://assets/ui/chat.svg")
@@ -111,6 +120,7 @@ func _ready() -> void:
 	%SailButton.hide()
 	%SailStatus.hide()
 	%LandmarkButton.hide()
+	%KitchenButton.hide()
 	_refresh_wallet()
 	_refresh_gear()
 	_refresh_journey()
@@ -122,6 +132,11 @@ func _ready() -> void:
 func _refresh_bait() -> void:
 	%BaitButton.visible = GameState.bait_charges > 0 and not _fishing_focus
 	%BaitButton.text = "Приманка: %s (%d)" % ["ВКЛ" if GameState.bait_enabled else "ВЫКЛ", GameState.bait_charges]
+	var meal := GameState.active_meal()
+	%MealInfo.visible = meal != null and not _fishing_focus
+	if meal:
+		%MealInfo.text = "%s\nЕщё %s" % [meal.display_name, MealData.casts_text(GameState.meal_charges)]
+		%MealInfo.tooltip_text = meal.effect_text()
 
 
 func _refresh_journey() -> void:
@@ -174,8 +189,9 @@ func _process(_delta: float) -> void:
 	%SailButton.visible = _sailing_available and not _fishing_focus and not is_modal_open()
 	%SailStatus.visible = _sailing_active and not _fishing_focus and not is_modal_open()
 	_hint_label.visible = not is_modal_open() and not _hint_label.text.is_empty()
-	%ModalShade.visible = _shop.visible or _collection.visible or _catch_popup.visible or _landmark_popup.visible
+	%ModalShade.visible = _shop.visible or _collection.visible or _catch_popup.visible or _landmark_popup.visible or _kitchen.visible
 	%LandmarkButton.visible = _nearby_landmark != null and not _fishing_focus and not is_modal_open()
+	%KitchenButton.visible = _kitchen_available and not _fishing_focus and not is_modal_open()
 
 
 func set_fishing_focus(active: bool) -> void:
@@ -222,7 +238,12 @@ func show_sailing_hint(blocked: bool) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if _travel_fade.visible:
 		return
-	if event.is_action_pressed(&"interact") and %LandmarkButton.visible:
+	if event.is_action_pressed(&"interact") and (_kitchen.visible or %KitchenButton.visible):
+		if _kitchen.visible:
+			_kitchen.hide()
+		else:
+			kitchen_requested.emit()
+	elif event.is_action_pressed(&"interact") and %LandmarkButton.visible:
 		landmark_requested.emit()
 	elif (event.is_action_pressed(&"sail_action") or (_sailing_active and event.is_action_pressed(&"interact"))) and %SailButton.visible:
 		sailing_requested.emit()
@@ -238,7 +259,18 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func is_modal_open() -> bool:
-	return _collection.visible or _catch_popup.visible or _shop.visible or _travel_fade.visible or _landmark_popup.visible
+	return _collection.visible or _catch_popup.visible or _shop.visible or _travel_fade.visible or _landmark_popup.visible or _kitchen.visible
+
+
+func set_kitchen_available(available: bool) -> void:
+	_kitchen_available = available
+	%KitchenButton.text = "Марта · кухня" if _touch_available else ("Марта · X" if not Input.get_connected_joypads().is_empty() else "Марта · E")
+	if not available:
+		_kitchen.hide()
+
+
+func open_kitchen() -> void:
+	_kitchen.open()
 
 
 func set_landmark_available(data: LandmarkData) -> void:
@@ -394,7 +426,7 @@ func _refresh_gear() -> void:
 
 
 func _open_shop() -> void:
-	if _catch_popup.visible or _landmark_popup.visible:
+	if _catch_popup.visible or _landmark_popup.visible or _kitchen.visible:
 		return
 	var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
 	if controller and controller.phase != FishingController.Phase.IDLE:
@@ -404,6 +436,7 @@ func _open_shop() -> void:
 
 
 func _toggle_collection() -> void:
+	_kitchen.hide()
 	if _landmark_popup.visible:
 		var return_to_journal := _return_from_landmark
 		_landmark_popup.close()

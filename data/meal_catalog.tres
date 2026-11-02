@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="MealCatalog" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/meal_catalog.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/data/meal_data.gd" id="2"]
+[ext_resource type="Resource" path="res://data/meals/fish_soup.tres" id="3"]
+[ext_resource type="Resource" path="res://data/meals/grilled_perch.tres" id="4"]
+
+[resource]
+script = ExtResource("1")
+meals = Array[ExtResource("2")]([ExtResource("3"), ExtResource("4")])

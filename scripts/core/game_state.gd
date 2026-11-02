@@ -20,6 +20,7 @@ const BAIT: BaitData = preload("res://data/bait.tres")
 const BOAT: BoatStats = preload("res://data/boats/explorer.tres")
 const BIOMES: BiomeCatalog = preload("res://data/biome_catalog.tres")
 const LANDMARKS: LandmarkCatalog = preload("res://data/landmark_catalog.tres")
+const MEALS: MealCatalog = preload("res://data/meal_catalog.tres")
 
 var catalog: FishCatalog = CATALOG
 var gear_catalog: GearCatalog = GEAR_CATALOG
@@ -42,6 +43,9 @@ var sales := 0
 var bait_charges := 0
 var bait_enabled := false
 var boat_upgraded := false
+var active_meal_id := ""
+var meal_charges := 0
+var meals_cooked := 0
 ## Подробности последнего улова для карточки результата.
 var last_catch_report: Dictionary = {}
 var save_recovery_notice := ""
@@ -145,7 +149,67 @@ func fishing_gear(habitat: StringName) -> GearStats:
 	if bait_enabled and bait_charges > 0:
 		result.luck += BAIT.luck_bonus
 		result.bite_time_mult *= BAIT.bite_time_mult
+	var meal := active_meal()
+	if meal:
+		result.reel_speed *= meal.reel_speed_mult
+		result.luck += meal.luck_bonus
 	return result
+
+
+func active_meal() -> MealData:
+	return MEALS.get_meal(StringName(active_meal_id)) if meal_charges > 0 else null
+
+
+## Самый недорогой подходящий улов выбирается первым. Рекорды коллекции не трогаем.
+func cooking_selection(meal: MealData) -> Array[int]:
+	var candidates: Array[int] = []
+	if meal == null:
+		return candidates
+	for i in inventory.size():
+		var fish := catalog.get_fish(StringName(inventory[i]["fish_id"]))
+		if fish == null or fish.rarity > meal.max_ingredient_rarity:
+			continue
+		if not meal.ingredient_fish.is_empty() and fish.id != meal.ingredient_fish:
+			continue
+		candidates.append(i)
+	candidates.sort_custom(func(a: int, b: int) -> bool:
+		var first := catalog.get_fish(StringName(inventory[a]["fish_id"])).value_for(float(inventory[a]["weight_kg"]))
+		var second := catalog.get_fish(StringName(inventory[b]["fish_id"])).value_for(float(inventory[b]["weight_kg"]))
+		return a < b if first == second else first < second)
+	var selected: Array[int] = []
+	for i in mini(meal.ingredient_count, candidates.size()):
+		selected.append(candidates[i])
+	return selected
+
+
+func cooking_error(meal: MealData) -> String:
+	if meal == null:
+		return "Неизвестный рецепт"
+	if active_meal() != null:
+		return "Сначала используй текущее блюдо"
+	if cooking_selection(meal).size() < meal.ingredient_count:
+		return "Не хватает подходящего улова"
+	return ""
+
+
+func cook_meal(id: StringName) -> bool:
+	var meal := MEALS.get_meal(id)
+	if not cooking_error(meal).is_empty():
+		return false
+	var selected := cooking_selection(meal)
+	selected.sort()
+	selected.reverse()
+	for index in selected:
+		inventory.remove_at(index)
+	active_meal_id = String(meal.id)
+	meal_charges = meal.charges
+	meals_cooked += 1
+	_claim_goals()
+	_save()
+	inventory_changed.emit()
+	supplies_changed.emit()
+	journey_changed.emit()
+	return true
 
 
 ## Вызывать только после создания сессии: заброс на сушу приманку не тратит.
@@ -156,6 +220,22 @@ func consume_bait() -> void:
 	if bait_charges == 0:
 		bait_enabled = false
 	_supplies_updated()
+
+
+## Приманку и блюдо расходуем одним снимком только после создания сессии.
+func consume_fishing_supplies() -> void:
+	var changed := false
+	if bait_enabled and bait_charges > 0:
+		bait_charges -= 1
+		bait_enabled = bait_charges > 0
+		changed = true
+	if active_meal() != null:
+		meal_charges -= 1
+		if meal_charges == 0:
+			active_meal_id = ""
+		changed = true
+	if changed:
+		_supplies_updated()
 
 
 func _supplies_updated(spent_money := false) -> void:
@@ -204,6 +284,7 @@ func discover_landmark(id: StringName) -> bool:
 
 func journey_progress(metric: String) -> int:
 	match metric:
+		"meals": return meals_cooked
 		"landmarks": return discovered_landmarks.size()
 		"sales": return sales
 		"species": return collection.size()
@@ -269,6 +350,9 @@ func _save() -> void:
 		"bait_charges": bait_charges,
 		"bait_enabled": bait_enabled,
 		"boat_upgraded": boat_upgraded,
+		"active_meal_id": active_meal_id,
+		"meal_charges": meal_charges,
+		"meals_cooked": meals_cooked,
 	})
 	if not saved:
 		save_failed.emit(_store.last_error)
@@ -291,6 +375,13 @@ func _load() -> void:
 	bait_charges = maxi(0, int(data.get("bait_charges", 0)))
 	bait_enabled = bool(data.get("bait_enabled", false)) and bait_charges > 0
 	boat_upgraded = bool(data.get("boat_upgraded", false))
+	# До v7 походной кухни не было; неизвестное блюдо не создаёт бесконечный эффект.
+	active_meal_id = str(data.get("active_meal_id", ""))
+	var meal := MEALS.get_meal(StringName(active_meal_id))
+	meal_charges = clampi(int(data.get("meal_charges", 0)), 0, meal.charges) if meal else 0
+	if meal_charges == 0:
+		active_meal_id = ""
+	meals_cooked = maxi(0, int(data.get("meals_cooked", 0)))
 	orders.available_habitats.assign([&"lake", &"mangrove", &"fjord"] if boat_upgraded else [&"lake", &"mangrove"])
 	# В сохранениях v1 снастей не было — выдаём стартовую удочку.
 	var starter := String(gear_catalog.rods[0].id)

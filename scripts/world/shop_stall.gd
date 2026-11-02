@@ -7,6 +7,12 @@ extends Area3D
 
 func _ready() -> void:
 	HarborProps.shop(self)
+	for child in $Luka.get_children():
+		if child is MeshInstance3D:
+			child.hide()
+	# Не прячем лицо под навесом: Лука стоит сбоку у ящика.
+	$Luka.position = Vector3(-1.8, 0, -0.85)
+	$Luka.add_child(NeighborModel.new())
 	$Sign.hide()
 	$Sign.modulate = Color("#f0e5c6")
 	$Sign.outline_size = 4

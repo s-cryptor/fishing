@@ -39,6 +39,7 @@ var _kitchen_available := false
 @onready var _travel_label: Label = %TravelLabel
 @onready var _landmark_popup: LandmarkPopup = %LandmarkPopup
 @onready var _kitchen: CookingPanel = %CookingPanel
+@onready var _basket: BasketPanel = %BasketPanel
 
 var _toast_tween: Tween
 var _travel_destination := ""
@@ -46,7 +47,7 @@ var _travel_destination := ""
 
 func _ready() -> void:
 	add_to_group(&"game_hud")
-	for panel in [_collection, _shop, _catch_popup, _landmark_popup, _kitchen]:
+	for panel in [_collection, _shop, _catch_popup, _landmark_popup, _kitchen, _basket]:
 		panel.visibility_changed.connect(_fence_fishing_input)
 	var touch := DisplayServer.is_touchscreen_available() or DebugTools.touch_ui
 	_touch_available = touch
@@ -89,6 +90,7 @@ func _ready() -> void:
 	GameState.order_completed.connect(func(order: Dictionary) -> void:
 		toast("Заказ выполнен: %s, +%d монет" % [order["giver"], int(order["reward"])]))
 	_sell_button.pressed.connect(_on_sell_pressed)
+	_basket.sold.connect(func(value: int) -> void: toast("Улов продан: +%d монет" % value))
 	_shop_button.pressed.connect(_open_shop)
 	_travel_button.pressed.connect(travel_requested.emit)
 	%SailButton.pressed.connect(sailing_requested.emit)
@@ -197,7 +199,7 @@ func _process(_delta: float) -> void:
 	%SailButton.visible = _sailing_available and not _fishing_focus and not is_modal_open()
 	%SailStatus.visible = _sailing_active and not _fishing_focus and not is_modal_open()
 	_hint_label.visible = not is_modal_open() and not _hint_label.text.is_empty()
-	%ModalShade.visible = _shop.visible or _collection.visible or _catch_popup.visible or _landmark_popup.visible or _kitchen.visible
+	%ModalShade.visible = _shop.visible or _collection.visible or _catch_popup.visible or _landmark_popup.visible or _kitchen.visible or _basket.visible
 	%LandmarkButton.visible = _nearby_landmark != null and not _fishing_focus and not is_modal_open()
 	%KitchenButton.visible = _kitchen_available and not _fishing_focus and not is_modal_open()
 
@@ -257,6 +259,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		sailing_requested.emit()
 	elif event.is_action_pressed(&"toggle_collection"):
 		_toggle_collection()
+	elif event.is_action_pressed(&"toggle_basket"):
+		_on_sell_pressed()
 	elif event.is_action_pressed(&"interact") and _shop_button.visible:
 		if _shop.visible:
 			_shop.hide()
@@ -267,7 +271,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func is_modal_open() -> bool:
-	return _collection.visible or _catch_popup.visible or _shop.visible or _travel_fade.visible or _landmark_popup.visible or _kitchen.visible
+	return _collection.visible or _catch_popup.visible or _shop.visible or _travel_fade.visible or _landmark_popup.visible or _kitchen.visible or _basket.visible
 
 
 func set_kitchen_available(available: bool) -> void:
@@ -425,8 +429,8 @@ func _on_catch_popup_closed() -> void:
 func _refresh_wallet() -> void:
 	_money_label.text = "%d монет" % GameState.money
 	var count := GameState.inventory.size()
-	_sell_button.text = "Продать улов (%d)" % count
-	_sell_button.disabled = count == 0
+	_sell_button.text = "Садок (%d)" % count
+	_sell_button.tooltip_text = "Выбрать улов для продажи · I / RB"
 
 
 func _refresh_gear() -> void:
@@ -434,7 +438,7 @@ func _refresh_gear() -> void:
 
 
 func _open_shop() -> void:
-	if _catch_popup.visible or _landmark_popup.visible or _kitchen.visible:
+	if _catch_popup.visible or _landmark_popup.visible or _kitchen.visible or _basket.visible:
 		return
 	var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
 	if controller and controller.phase != FishingController.Phase.IDLE:
@@ -445,6 +449,7 @@ func _open_shop() -> void:
 
 func _toggle_collection() -> void:
 	_kitchen.hide()
+	_basket.hide()
 	if _landmark_popup.visible:
 		var return_to_journal := _return_from_landmark
 		_landmark_popup.close()
@@ -462,5 +467,13 @@ func _toggle_collection() -> void:
 
 
 func _on_sell_pressed() -> void:
-	var earned := GameState.sell_all()
-	toast("Улов продан: +%d монет" % earned)
+	if _basket.visible:
+		_basket.hide()
+		return
+	var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
+	if _catch_popup.visible or _landmark_popup.visible or _travel_fade.visible or (controller and controller.phase != FishingController.Phase.IDLE):
+		return
+	_shop.hide()
+	_kitchen.hide()
+	_collection.hide()
+	_basket.open()

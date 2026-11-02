@@ -116,6 +116,16 @@ func _run() -> void:
 	_check(collection_panel.get_node("VBox/Scroll/CollectionGrid").get_child_count() == state.JOURNEY.goals.size(),
 			"журнал показывает все цели пути рыболова")
 	hud._toggle_collection()
+	player.position = Vector3(0, 0.6, -9)
+	state.equipped_gear_id = "abyss"
+	controller._start_charge()
+	controller._charge_time = 0.95
+	controller._release_cast()
+	await create_timer(1.5).timeout
+	var camera := scene.get_node("CameraRig/Camera3D") as Camera3D
+	var bobber := scene.get_node("Bobber") as Node3D
+	_check(camera.is_position_in_frustum(player.global_position + Vector3.UP) and camera.is_position_in_frustum(bobber.global_position),
+			"ортографическая камера удерживает рыбака и дальний заброс в кадре")
 	scene.queue_free()
 	await process_frame
 	quit(1 if _failures else 0)

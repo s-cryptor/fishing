@@ -4,6 +4,9 @@ extends PanelContainer
 
 @onready var _money_label: Label = %ShopMoney
 @onready var _list: VBoxContainer = %ShopList
+@onready var _greeting: Label = %LukaGreeting
+
+var _show_orders := false
 
 
 func _ready() -> void:
@@ -11,11 +14,20 @@ func _ready() -> void:
 	%ShopCloseButton.pressed.connect(hide)
 	GameState.money_changed.connect(func(_m: int) -> void: _refresh_if_visible())
 	GameState.gear_changed.connect(_refresh_if_visible)
+	GameState.orders_changed.connect(_refresh_if_visible)
+	%LukaGearButton.pressed.connect(_set_orders.bind(false))
+	%LukaOrdersButton.pressed.connect(_set_orders.bind(true))
 
 
 func open() -> void:
+	_show_orders = false
 	_rebuild()
 	show()
+
+
+func _set_orders(value: bool) -> void:
+	_show_orders = value
+	_rebuild()
 
 
 func _refresh_if_visible() -> void:
@@ -26,9 +38,33 @@ func _refresh_if_visible() -> void:
 func _rebuild() -> void:
 	_money_label.text = "Монеты: %d" % GameState.money
 	for child in _list.get_children():
+		_list.remove_child(child)
 		child.queue_free()
+	_greeting.text = "Лука: Соседи оставили заказы. Награду получишь сразу после поимки — рыба останется у тебя." if _show_orders else "Лука: Рад тебя видеть! Подберём удочку? За сильной рыбой лучше идти с хорошей снастью."
+	%LukaGearButton.disabled = not _show_orders
+	%LukaOrdersButton.disabled = _show_orders
+	if _show_orders:
+		for order in GameState.orders.orders:
+			_list.add_child(_make_order(order))
+		return
 	for rod in GameState.gear_catalog.rods:
 		_list.add_child(_make_row(rod))
+
+
+func _make_order(order: Dictionary) -> Control:
+	var box := VBoxContainer.new()
+	var title := Label.new()
+	title.text = OrderBook.describe(order, GameState.catalog)
+	title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(title)
+	var fish := GameState.catalog.get_fish(StringName(order["fish_id"]))
+	var info := Label.new()
+	info.text = "Награда: %d монет · %s\nКлюёт: %s" % [int(order["reward"]),
+			"Родное озеро" if &"lake" in fish.habitats else "Мангровые отмели", DayTime.describe(fish.active_times)]
+	info.add_theme_font_size_override("font_size", 18)
+	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(info)
+	return box
 
 
 func _make_row(rod: GearStats) -> Control:

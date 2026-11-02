@@ -34,6 +34,24 @@ func _run() -> void:
 	await create_timer(1.2).timeout
 	_check(controller.water.habitat_id() == &"lake" and player.position.x < 0 and player.can_move,
 			"обратный путь возвращает домой и разблокирует ходьбу")
+	player.position = Vector3(4.5, 0.6, -4)
+	await create_timer(0.2).timeout
+	var event := InputEventAction.new()
+	event.action = &"interact"
+	event.pressed = true
+	Input.parse_input_event(event)
+	await process_frame
+	var shop: Control = hud.get_node("Root/ShopPanel")
+	_check(shop.visible and hud.is_modal_open(), "у прилавка открывается разговор с Лукой")
+	shop.get_node("VBox/LukaChoices/LukaOrdersButton").pressed.emit()
+	_check(shop.get_node("VBox/Scroll/ShopList").get_child_count() == state.orders.orders.size(),
+			"Лука показывает все актуальные заказы")
+	shop.get_node("VBox/LukaChoices/LukaGearButton").pressed.emit()
+	_check(shop.get_node("VBox/Scroll/ShopList").get_child_count() == state.gear_catalog.rods.size(),
+			"из разговора доступны все удочки")
+	player.position = Vector3.ZERO
+	await create_timer(0.2).timeout
+	_check(not shop.visible, "разговор закрывается при уходе от прилавка")
 	scene.queue_free()
 	await process_frame
 	quit(1 if _failures else 0)

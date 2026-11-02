@@ -83,7 +83,7 @@ layout_mode = 2
 size_flags_vertical = 0
 focus_mode = 0
 theme_override_colors/font_color = Color(1, 0.88, 0.4, 1)
-text = "Магазин снастей"
+text = "Поговорить с Лукой"
 
 [node name="TravelButton" type="Button" parent="Root/TopBar"]
 unique_name_in_owner = true
@@ -410,7 +410,7 @@ theme_override_constants/separation = 16
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 28
-text = "Магазин снастей"
+text = "Торговец Лука"
 
 [node name="ShopMoney" type="Label" parent="Root/ShopPanel/VBox/Header"]
 unique_name_in_owner = true
@@ -422,6 +422,28 @@ unique_name_in_owner = true
 layout_mode = 2
 focus_mode = 0
 text = "Закрыть"
+
+[node name="LukaGreeting" type="Label" parent="Root/ShopPanel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 3
+theme_override_font_sizes/font_size = 20
+
+[node name="LukaChoices" type="HBoxContainer" parent="Root/ShopPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="LukaGearButton" type="Button" parent="Root/ShopPanel/VBox/LukaChoices"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Посмотреть снасти"
+
+[node name="LukaOrdersButton" type="Button" parent="Root/ShopPanel/VBox/LukaChoices"]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+text = "Что нужно соседям?"
 
 [node name="Scroll" type="ScrollContainer" parent="Root/ShopPanel/VBox"]
 layout_mode = 2

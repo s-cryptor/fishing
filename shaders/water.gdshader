@@ -40,9 +40,10 @@ void fragment() {
 	float wave = sin(p.y * 3.5 + p.x * 0.32 + sin(p.x * 0.5) * 0.5 - TIME * 0.55);
 	float glint = smoothstep(0.97, 1.0, wave) * smoothstep(0.6, 0.85, noise(p * vec2(0.8, 0.4) + TIME * 0.025)) * 0.065;
 	float foam_band = abs(shore - 0.4 - sin(TIME * 0.7 + broad * 4.0) * 0.16);
-	float foam = (1.0 - smoothstep(0.04, 0.16, foam_band)) * (0.4 + broad * 0.3);
+	float foam = (1.0 - smoothstep(0.025, 0.11, foam_band)) * (0.16 + broad * 0.24);
+	float wash = (1.0 - smoothstep(0.1, 0.8, foam_band)) * 0.035;
 	vec3 local_shallow = mix(shallow_color.rgb, vec3(0.48, 0.65, 0.7), smoothstep(125.0, 150.0, p.x));
-	ALBEDO = mix(deep_color.rgb, local_shallow, shallow * 0.8) + vec3((broad - 0.5) * 0.045 + glint) + foam * vec3(0.45, 0.47, 0.4);
+	ALBEDO = mix(deep_color.rgb, local_shallow, shallow * 0.8) + vec3((broad - 0.5) * 0.045 + glint + wash) + foam * vec3(0.45, 0.47, 0.4);
 	ROUGHNESS = 0.85;
 	SPECULAR = 0.15;
 }

@@ -13,7 +13,7 @@ const RARITY_COLORS: Array[Color] = [
 @export var display_name := ""
 @export_multiline var description := ""
 @export var rarity := Rarity.COMMON
-## Цвет-заглушка, пока нет моделей и иконок.
+## Основная окраска собственных объёмных моделей и портретов вида.
 @export var color := Color.WHITE
 
 @export_group("Вес и цена")

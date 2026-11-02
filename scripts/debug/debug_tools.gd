@@ -18,6 +18,8 @@ extends Node
 ##   --hour=H            начать в H часов (0..24)
 ##   --day-length=SEC    длительность игровых суток
 ##   --mute              без звука (включается сам при --shots)
+##   --seed=N            воспроизводимая последовательность случайных чисел
+##   --showcase=FISH_ID   показать объёмный трофей без добавления улова в сохранение
 ##   При --quit-after в лог печатается позиция игрока.
 
 var autoplay := false
@@ -43,6 +45,8 @@ var _teleport: Variant = null
 var _scheduled_actions: Array = []
 var _held_actions: Array[StringName] = []
 var _mute := false
+var _seed_value: Variant = null
+var _showcase := ""
 
 
 func _init() -> void:
@@ -67,6 +71,8 @@ func _init() -> void:
 			"--hour": start_hour = value.to_float()
 			"--day-length": day_length = value.to_float()
 			"--mute": _mute = true
+			"--seed": _seed_value = value.to_int()
+			"--showcase": _showcase = value
 			"--action":
 				var action_time := value.split("@")
 				_scheduled_actions.append([StringName(action_time[0]), action_time[1].to_float()])
@@ -84,6 +90,8 @@ func _ready() -> void:
 
 
 func _apply_start_overrides() -> void:
+	if _seed_value != null:
+		seed(_seed_value)
 	if not _start_biome.is_empty():
 		var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
 		if controller:
@@ -108,6 +116,15 @@ func _apply_start_overrides() -> void:
 		var player := get_tree().get_first_node_in_group(&"player") as Node3D
 		if player:
 			player.global_position = Vector3(_teleport.x, player.global_position.y, _teleport.y)
+	if not _showcase.is_empty():
+		var fish := GameState.catalog.get_fish(StringName(_showcase))
+		var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
+		if fish and controller:
+			controller.phase = FishingController.Phase.RESULT
+			controller.player.can_move = false
+			controller.hud.set_fishing_focus(true)
+			controller.hud.set_hint("")
+			controller.hud.show_catch(fish, fish.max_weight_kg * 0.9, false)
 
 
 func _process(delta: float) -> void:

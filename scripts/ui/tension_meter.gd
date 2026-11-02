@@ -15,6 +15,7 @@ var thrashing := false:
 	set(value):
 		thrashing = value
 		queue_redraw()
+var control := 0.0
 
 
 func _draw() -> void:
@@ -25,6 +26,11 @@ func _draw() -> void:
 	_draw_zone(0.0, FishingSession.SLACK_TENSION, SLACK_COLOR)
 	_draw_zone(FishingSession.SLACK_TENSION, DANGER_FROM, SAFE_COLOR)
 	_draw_zone(DANGER_FROM, 1.0, DANGER_COLOR)
+	var band := Rect2(FishingSession.CONTROL_MIN * size.x, 3.0,
+		(FishingSession.CONTROL_MAX - FishingSession.CONTROL_MIN) * size.x, size.y - 6.0)
+	draw_rect(band, Color("#bdd6a1").lerp(Color("#f1d992"), control))
+	for edge in [band.position.x, band.end.x]:
+		draw_line(Vector2(edge, 0), Vector2(edge, size.y), Color("#e9e2bc"), 1.0)
 	var x := clampf(tension, 0.0, 1.0) * size.x
 	var marker := StyleBoxFlat.new()
 	marker.bg_color = Color("#f3c578") if thrashing else Color("#f0e7ce")

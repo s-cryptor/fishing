@@ -29,6 +29,7 @@ var _origin := Vector3.ZERO
 var _preview: MeshInstance3D
 var _preview_material: StandardMaterial3D
 var _preview_label: Label3D
+var _fight_time := 0.0
 
 
 func _ready() -> void:
@@ -45,6 +46,10 @@ func cast_power() -> float:
 
 
 func _process(delta: float) -> void:
+	var fighting := session != null and session.state == FishingSession.State.FIGHTING
+	player.fishing_pose(phase in [Phase.CHARGING, Phase.CASTING, Phase.SESSION],
+		cast_power() if phase == Phase.CHARGING else 0.0,
+		session.tension if fighting else 0.0, fighting and Input.is_action_pressed(ACTION))
 	match phase:
 		Phase.IDLE:
 			if Input.is_action_just_pressed(ACTION) and not hud.is_modal_open():
@@ -88,7 +93,8 @@ func _release_cast() -> void:
 	if _spot:
 		gear = _spot.boost(gear)
 		hud.toast("Рыбное место! Клюнет быстрее")
-	session = FishingSession.create(GameState.catalog, water.habitat_id(), gear, distance, randi(), WorldClock.phase)
+	session = FishingSession.create(GameState.catalog, water.habitat_id(), gear, distance, randi(), WorldClock.phase,
+		water.landing_distance(_origin, _cast_dir, distance))
 	if session == null:
 		hud.toast("Здесь не водится рыба")
 		_to_idle()
@@ -97,8 +103,15 @@ func _release_cast() -> void:
 	session.state_changed.connect(_on_session_state_changed)
 	session.thrash_started.connect(bobber.splash)
 	session.thrash_started.connect(Sfx.play.bind(&"thrash", -4.0))
+	session.thrash_warned.connect(func() -> void:
+		Sfx.play(&"whoosh", -22.0, 1.8)
+		PlayerSettings.vibrate(35))
+	_fight_time = 0.0
+	bobber.fish_size = lerpf(0.7, 1.5, inverse_lerp(session.fish.min_weight_kg, session.fish.max_weight_kg, session.weight_kg))
+	bobber.heading = atan2(_cast_dir.x, _cast_dir.z) + PI
 
 	phase = Phase.CASTING
+	player.cast_gesture()
 	Sfx.play(&"whoosh")
 	hud.set_hint("")
 	bobber.cast(player.rod_tip.global_position, landing, CAST_FLIGHT_TIME)
@@ -126,7 +139,6 @@ func _update_session(delta: float) -> void:
 				_to_idle()
 				return
 		FishingSession.State.BITING:
-			PlayerSettings.vibrate(90)
 			if just_pressed:
 				session.hook()
 
@@ -137,8 +149,12 @@ func _update_session(delta: float) -> void:
 		return
 
 	Sfx.set_reel(reeling, session.tension)
-	bobber.anchor = _origin + _cast_dir * session.distance
+	_fight_time += delta
+	var sway := sin(_fight_time * 2.4) * minf(1.0, session.distance * 0.12) * (1.0 if session.is_thrashing else 0.25)
+	bobber.anchor = _origin + _cast_dir * session.distance + _cast_dir.cross(Vector3.UP) * sway
 	bobber.thrashing = session.is_thrashing
+	bobber.warning = session.is_telegraphing()
+	line.tension = session.tension
 	line.slack = 1.0 - clampf(session.tension * 1.5, 0.0, 1.0)
 	hud.update_fight(session)
 
@@ -146,6 +162,7 @@ func _update_session(delta: float) -> void:
 func _on_session_state_changed(state: FishingSession.State) -> void:
 	match state:
 		FishingSession.State.BITING:
+			PlayerSettings.vibrate(90)
 			bobber.mode = Bobber.Mode.BITE
 			Sfx.play(&"plop")
 			hud.set_hint("Клюёт! Жми {action}!")
@@ -153,7 +170,7 @@ func _on_session_state_changed(state: FishingSession.State) -> void:
 			bobber.mode = Bobber.Mode.FIGHT
 			Sfx.play(&"splash", -3.0, 1.3)
 			hud.show_fight()
-			hud.set_hint("Держи {action} — подматывать. Отпускай, когда леска в красной зоне")
+			hud.set_hint("Держи {action} — тяни · отпускай — ослабляй · светлая зона — бонус")
 		FishingSession.State.CAUGHT:
 			PlayerSettings.vibrate(150)
 			var fish := session.fish
@@ -187,6 +204,7 @@ func _end_session() -> void:
 	_spot = null
 	bobber.retract()
 	line.detach()
+	line.tension = 0.0
 	hud.hide_fight()
 	camera_rig.focus = null
 

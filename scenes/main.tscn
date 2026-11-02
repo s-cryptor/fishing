@@ -123,16 +123,6 @@ top_radius = 0.02
 bottom_radius = 0.05
 height = 0.2
 
-[sub_resource type="StandardMaterial3D" id="ripple_mat"]
-transparency = 1
-shading_mode = 0
-albedo_color = Color(1, 1, 1, 0.6)
-
-[sub_resource type="TorusMesh" id="ripple_mesh"]
-material = SubResource("ripple_mat")
-inner_radius = 0.42
-outer_radius = 0.5
-
 [node name="Main" type="Node3D"]
 
 [node name="IslandDetails" type="Node3D" parent="."]
@@ -365,10 +355,6 @@ mesh = SubResource("bobber_mesh")
 [node name="Top" type="MeshInstance3D" parent="Bobber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.18, 0)
 mesh = SubResource("bobber_top_mesh")
-
-[node name="Ripple" type="MeshInstance3D" parent="Bobber"]
-top_level = true
-mesh = SubResource("ripple_mesh")
 
 [node name="BiteMark" type="Label3D" parent="Bobber"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0)

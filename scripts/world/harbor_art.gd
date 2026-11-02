@@ -20,6 +20,7 @@ func _build() -> void:
 	IslandTerrain.build(self, Vector3(160, 0, 0), 2)
 	for biome in 3:
 		NatureArt.scatter(self, Vector3(biome * 80, 0, 0), biome)
+		NatureArt.shoreline(self, Vector3(biome * 80, 0, 0), biome)
 	var house := main.get_node("House") as Node3D
 	for child in house.get_children():
 		if child is MeshInstance3D:

@@ -5,7 +5,7 @@ extends PanelContainer
 signal closed
 
 @onready var _title: Label = %Title
-@onready var _swatch: FishPortrait = %Swatch
+@onready var _swatch: FishShowcase = %Swatch
 @onready var _name: Label = %FishName
 @onready var _rarity: Label = %Rarity
 @onready var _stats: Label = %Stats

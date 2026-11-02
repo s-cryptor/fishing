@@ -27,7 +27,9 @@ func _process(delta: float) -> void:
 		goal = goal.lerp(focus.global_position, 0.5)
 		# На дальней снасти оставляем в кадре и рыбака, и поплавок.
 		var projected_distance := absf((focus.global_position - target.global_position).dot(_camera.global_basis.y))
-		desired_size = maxf(19.0, projected_distance + 5.0)
+		desired_size = maxf(19.0, projected_distance * 1.75 + 5.0)
+		# Подводим сцену к безопасной части экрана над нижними шкалами.
+		goal -= _camera.global_basis.y * desired_size * 0.1
 	else:
 		goal += Vector3(0, 0, 2.5)
 	global_position = global_position.lerp(goal, 1.0 - exp(-follow_speed * delta))

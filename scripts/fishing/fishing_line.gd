@@ -8,6 +8,7 @@ var from_node: Node3D
 var to_node: Node3D
 ## 0 — натянута в струну, 1 — сильно провисла.
 var slack := 0.5
+var tension := 0.0
 
 var _mesh := ImmediateMesh.new()
 
@@ -41,6 +42,8 @@ func _process(_delta: float) -> void:
 	var a := from_node.global_position
 	var b := to_node.global_position
 	var sag := a.distance_to(b) * 0.15 * slack
+	var material := material_override as StandardMaterial3D
+	material.albedo_color = Color("#e2e3cf").lerp(Color("#eb977b"), smoothstep(0.72, 1.0, tension))
 	_mesh.clear_surfaces()
 	_mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
 	for i in SEGMENTS + 1:

@@ -27,6 +27,11 @@ func _run() -> void:
 		player.move_and_collide(outward * 20.0)
 		shore_safe = shore_safe and not lake.is_water(player.position)
 	_check(shore_safe, "неровный берег не выпускает игрока в воду")
+	var landing := lake.landing_distance(Vector3(0, 0, -9), Vector3.FORWARD, 12.0) as float
+	_check(landing > 2.0 and landing < 6.0 and lake.is_water(Vector3(0, 0, -9) + Vector3.FORWARD * landing),
+		"улов принимается у водной кромки, а не под сушей")
+	_check(is_equal_approx(lake.landing_distance(Vector3(0, 0, -16), Vector3.FORWARD, 10.0), FishingSession.LANDED_DISTANCE),
+		"при рыбалке с дальнего причала рыба подходит к игроку")
 	var pause_menu := scene.get_node("PauseMenu")
 	var clock := root.get_node("WorldClock")
 	pause_menu.toggle()
@@ -126,6 +131,39 @@ func _run() -> void:
 	var bobber := scene.get_node("Bobber") as Node3D
 	_check(camera.is_position_in_frustum(player.global_position + Vector3.UP) and camera.is_position_in_frustum(bobber.global_position),
 			"ортографическая камера удерживает рыбака и дальний заброс в кадре")
+	var player_screen := camera.unproject_position(player.global_position + Vector3.UP)
+	var fight_panel := hud.get_node("Root/FightPanel") as Control
+	_check(player_screen.y < fight_panel.get_global_rect().position.y,
+		"на дальнем забросе рыбак остаётся выше шкалы вываживания")
+	controller._end_session()
+	controller._to_idle()
+	var fx := scene.get_node("Bobber")._fx as FishingWaterFx
+	var pool_size := fx.get_child_count()
+	for i in 100:
+		fx.splash(Vector3(0, 0, -15))
+	_check(fx.get_child_count() == pool_size, "круги и капли переиспользуются без накопления узлов")
+	fx.reset()
+	var hidden := true
+	for child in fx.get_children():
+		hidden = hidden and not child.visible
+	_check(hidden, "после сматывания следы и силуэт рыбы сброшены")
+	# Сцену грузим после автозагрузок: статический тип CatchPopup опережает GameState в -s.
+	var popup: Node = hud.get_node("Root/CatchPopup")
+	for fish in state.catalog.fish:
+		popup.open(fish, fish.min_weight_kg, false)
+		var showcase := popup.get_node("VBox/Swatch") as FishShowcase
+		_check(showcase._model.get_node("Body").mesh.get_surface_count() == 1,
+			"объёмный трофей %s собран" % fish.display_name)
+		popup.close()
+		_check(showcase._viewport.render_target_update_mode == SubViewport.UPDATE_DISABLED,
+			"скрытый трофей %s не рендерится" % fish.display_name)
+	var showcase := popup.get_node("VBox/Swatch") as FishShowcase
+	var yaw_before := showcase._yaw
+	var drag := InputEventScreenDrag.new()
+	drag.relative = Vector2(40, 0)
+	showcase._gui_input(drag)
+	_check(showcase._yaw > yaw_before, "тач-жест поворачивает объёмный трофей")
+	_check(not showcase._model.is_processing(), "закрытая карточка останавливает анимацию рыбы")
 	scene.queue_free()
 	await process_frame
 	quit(1 if _failures else 0)

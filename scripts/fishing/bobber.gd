@@ -14,19 +14,28 @@ var mode := Mode.HIDDEN:
 ## Точка на воде, вокруг которой поплавок качается.
 var anchor := Vector3.ZERO
 var thrashing := false
+var warning := false
+var fish_size := 1.0
+var heading := 0.0
 
 var _time := 0.0
+var _wake_time := 0.0
+var _fx: FishingWaterFx
 
 @onready var _bite_mark: Label3D = $BiteMark
-@onready var _ripple: MeshInstance3D = $Ripple
 
 
 func _ready() -> void:
 	mode = Mode.HIDDEN
-	_ripple.visible = false
+	_fx = FishingWaterFx.new()
+	add_child(_fx)
 
 
 func cast(from: Vector3, to: Vector3, duration: float) -> void:
+	_fx.reset()
+	thrashing = false
+	warning = false
+	_wake_time = 0.0
 	anchor = to
 	mode = Mode.FLYING
 	var arc_height := from.distance_to(to) * 0.35
@@ -42,26 +51,27 @@ func cast(from: Vector3, to: Vector3, duration: float) -> void:
 
 func retract() -> void:
 	mode = Mode.HIDDEN
+	_fx.reset()
 
 
 ## Круги на воде — при приводнении и рывках рыбы.
 func splash() -> void:
-	_ripple.visible = true
-	_ripple.global_position = Vector3(global_position.x, anchor.y + 0.02, global_position.z)
-	_ripple.scale = Vector3.ONE * 0.3
-	var tween := create_tween()
-	tween.tween_property(_ripple, "scale", Vector3.ONE * 2.0, 0.6).set_ease(Tween.EASE_OUT)
-	tween.tween_callback(_ripple.hide)
+	_fx.splash(Vector3(global_position.x, anchor.y, global_position.z))
 
 
 func _process(delta: float) -> void:
 	_time += delta
+	_wake_time += delta
+	if mode in [Mode.FLOATING, Mode.BITE, Mode.FIGHT] and _wake_time > (0.22 if thrashing else 0.9):
+		_wake_time = 0.0
+		_fx.ripple(anchor, 0.7 if mode == Mode.FLOATING else 1.0)
 	match mode:
 		Mode.FLOATING:
 			global_position = anchor + Vector3.UP * sin(_time * 2.5) * 0.04
 		Mode.BITE:
 			global_position = anchor + Vector3.DOWN * 0.18 + Vector3.UP * sin(_time * 30.0) * 0.04
 		Mode.FIGHT:
-			var shake := 0.12 if thrashing else 0.02
+			var shake := 0.12 if thrashing else (0.06 if warning else 0.02)
 			global_position = anchor + Vector3.DOWN * 0.1 \
-					+ Vector3(randf_range(-shake, shake), 0.0, randf_range(-shake, shake))
+					+ Vector3(sin(_time * 31) * shake, 0.0, cos(_time * 23) * shake)
+			_fx.fish_at(anchor + Vector3(sin(_time * 3) * 0.25, 0, 0.2), heading + sin(_time * 5) * (0.5 if thrashing else 0.15), fish_size)

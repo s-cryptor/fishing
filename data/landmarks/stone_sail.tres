@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="LandmarkData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/landmark_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"stone_sail"
+title = "Каменный парус"
+habitat = &"fjord"
+description = "Ветер выгнул скалу, словно парус маленькой лодки. В сухой трещине спрятан выцветший вымпел с вышитой рыбой.\n\nНа обороте аккуратный почерк: «Даже самая сильная рыба готовится перед рывком. Смотри на поплавок и не бойся отпускать»."
+clue = "За причалом фьорда видна снежная каменная арка."
+position = Vector3(161, 0.5, 3.8)
+kind = 2

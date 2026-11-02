@@ -4,6 +4,7 @@ extends CanvasLayer
 signal catch_popup_closed
 signal travel_requested
 signal sailing_requested
+signal landmark_requested
 
 var _action_name := "Пробел"
 var _touch_available := false
@@ -11,6 +12,8 @@ var _fishing_focus := false
 var _sailing_active := false
 var _sailing_available := false
 var _return_to_collection := false
+var _return_from_landmark := false
+var _nearby_landmark: LandmarkData
 
 @onready var _money_label: Label = %MoneyLabel
 @onready var _gear_label: Label = %GearLabel
@@ -31,12 +34,14 @@ var _return_to_collection := false
 @onready var _travel_button: Button = %TravelButton
 @onready var _travel_fade: ColorRect = %TravelFade
 @onready var _travel_label: Label = %TravelLabel
+@onready var _landmark_popup: LandmarkPopup = %LandmarkPopup
 
 var _toast_tween: Tween
 var _travel_destination := ""
 
 
 func _ready() -> void:
+	add_to_group(&"game_hud")
 	var touch := DisplayServer.is_touchscreen_available() or DebugTools.touch_ui
 	_touch_available = touch
 	_touch_controls.visible = touch
@@ -62,6 +67,9 @@ func _ready() -> void:
 	%CollectionButton.pressed.connect(_toggle_collection)
 	_catch_popup.closed.connect(_on_catch_popup_closed)
 	_collection.fish_selected.connect(_inspect_fish)
+	_collection.landmark_selected.connect(_inspect_landmark_entry)
+	%LandmarkButton.pressed.connect(landmark_requested.emit)
+	_landmark_popup.closed.connect(_on_landmark_closed)
 	_sell_button.icon = load("res://assets/ui/fish.svg")
 	%CollectionButton.icon = load("res://assets/ui/book.svg")
 	_shop_button.icon = load("res://assets/ui/chat.svg")
@@ -81,6 +89,7 @@ func _ready() -> void:
 	%ModalShade.hide()
 	%SailButton.hide()
 	%SailStatus.hide()
+	%LandmarkButton.hide()
 	_refresh_wallet()
 	_refresh_gear()
 	_refresh_journey()
@@ -142,7 +151,8 @@ func _process(_delta: float) -> void:
 	%SailButton.visible = _sailing_available and not _fishing_focus and not is_modal_open()
 	%SailStatus.visible = _sailing_active and not _fishing_focus and not is_modal_open()
 	_hint_label.visible = not is_modal_open() and not _hint_label.text.is_empty()
-	%ModalShade.visible = _shop.visible or _collection.visible or _catch_popup.visible
+	%ModalShade.visible = _shop.visible or _collection.visible or _catch_popup.visible or _landmark_popup.visible
+	%LandmarkButton.visible = _nearby_landmark != null and not _fishing_focus and not is_modal_open()
 
 
 func set_fishing_focus(active: bool) -> void:
@@ -189,7 +199,9 @@ func show_sailing_hint(blocked: bool) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if _travel_fade.visible:
 		return
-	if (event.is_action_pressed(&"sail_action") or (_sailing_active and event.is_action_pressed(&"interact"))) and %SailButton.visible:
+	if event.is_action_pressed(&"interact") and %LandmarkButton.visible:
+		landmark_requested.emit()
+	elif (event.is_action_pressed(&"sail_action") or (_sailing_active and event.is_action_pressed(&"interact"))) and %SailButton.visible:
 		sailing_requested.emit()
 	elif event.is_action_pressed(&"toggle_collection"):
 		_toggle_collection()
@@ -203,7 +215,35 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func is_modal_open() -> bool:
-	return _collection.visible or _catch_popup.visible or _shop.visible or _travel_fade.visible
+	return _collection.visible or _catch_popup.visible or _shop.visible or _travel_fade.visible or _landmark_popup.visible
+
+
+func set_landmark_available(data: LandmarkData) -> void:
+	_nearby_landmark = data
+	%LandmarkButton.text = "Осмотреть" if _touch_available else ("Осмотреть · X" if not Input.get_connected_joypads().is_empty() else "Осмотреть · E")
+
+
+func clear_landmark_available(data: LandmarkData) -> void:
+	if _nearby_landmark == data:
+		_nearby_landmark = null
+
+
+func show_landmark(data: LandmarkData, is_new: bool) -> void:
+	_landmark_popup.open(data, is_new)
+
+
+func _inspect_landmark_entry(data: LandmarkData) -> void:
+	if not _collection.visible or String(data.id) not in GameState.discovered_landmarks:
+		return
+	_return_from_landmark = true
+	_collection.hide()
+	_landmark_popup.open(data, false)
+
+
+func _on_landmark_closed() -> void:
+	if _return_from_landmark:
+		_return_from_landmark = false
+		_collection.show()
 
 
 ## Игрок подошёл к прилавку или отошёл от него.
@@ -321,7 +361,7 @@ func _refresh_gear() -> void:
 
 
 func _open_shop() -> void:
-	if _catch_popup.visible:
+	if _catch_popup.visible or _landmark_popup.visible:
 		return
 	var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
 	if controller and controller.phase != FishingController.Phase.IDLE:
@@ -331,6 +371,12 @@ func _open_shop() -> void:
 
 
 func _toggle_collection() -> void:
+	if _landmark_popup.visible:
+		var return_to_journal := _return_from_landmark
+		_landmark_popup.close()
+		if not return_to_journal:
+			_collection.toggle()
+		return
 	if _return_to_collection:
 		_catch_popup.close()
 		return

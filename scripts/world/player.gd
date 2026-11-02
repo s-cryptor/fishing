@@ -6,6 +6,7 @@ extends CharacterBody3D
 
 var can_move := true
 var ride_target: Node3D
+var _hud: Node
 
 @onready var _model: FisherModel = $Model
 @onready var rod_tip: Marker3D = $Model/RodTip
@@ -22,7 +23,9 @@ func _physics_process(delta: float) -> void:
 		_model.animate_walk(false, delta)
 		return
 	var input := Input.get_vector(&"move_left", &"move_right", &"move_forward", &"move_back")
-	if not can_move:
+	if _hud == null:
+		_hud = get_tree().get_first_node_in_group(&"game_hud")
+	if not can_move or (_hud != null and _hud.is_modal_open()):
 		input = Vector2.ZERO
 	# Ввод относительно камеры: «вверх» — всегда от зрителя.
 	var direction := Vector3(input.x, 0.0, input.y)

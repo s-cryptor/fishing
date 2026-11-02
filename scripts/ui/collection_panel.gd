@@ -5,6 +5,7 @@ extends PanelContainer
 const UNKNOWN_COLOR := Color("#1b2633")
 
 signal fish_selected(fish: FishData)
+signal landmark_selected(data: LandmarkData)
 
 @onready var _header: Label = %CollectionHeader
 @onready var _grid: GridContainer = %CollectionGrid
@@ -23,6 +24,7 @@ func _ready() -> void:
 	for biome in GameState.BIOMES.biomes:
 		pages.append([biome.display_name, biome.habitat])
 	pages.append(["Путь рыболова", &"journey"])
+	pages.append(["Открытия", &"landmarks"])
 	for pair in pages:
 		var button := Button.new()
 		button.text = pair[0]
@@ -46,11 +48,15 @@ func toggle() -> void:
 
 
 func _rebuild() -> void:
+	_grid.columns = 4
 	for child in _grid.get_children():
 		_grid.remove_child(child)
 		child.queue_free()
 	if _habitat == &"journey":
 		_rebuild_journey()
+		return
+	if _habitat == &"landmarks":
+		_rebuild_landmarks()
 		return
 	var catalog := GameState.catalog
 	var known := 0
@@ -81,6 +87,48 @@ func _rebuild_journey() -> void:
 		info.add_theme_font_size_override("font_size", 16)
 		box.add_child(info)
 		_grid.add_child(box)
+
+
+func _rebuild_landmarks() -> void:
+	_grid.columns = 3
+	_header.text = "Открытия: %d / %d" % [GameState.discovered_landmarks.size(), GameState.LANDMARKS.landmarks.size()]
+	for data in GameState.LANDMARKS.landmarks:
+		var known := String(data.id) in GameState.discovered_landmarks
+		var panel := PanelContainer.new()
+		panel.custom_minimum_size = Vector2(190, 240)
+		panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color("#20443e") if known else Color("#193a35")
+		style.set_corner_radius_all(10)
+		style.content_margin_left = 12
+		style.content_margin_right = 12
+		style.content_margin_top = 12
+		style.content_margin_bottom = 12
+		panel.add_theme_stylebox_override("panel", style)
+		var box := VBoxContainer.new()
+		panel.add_child(box)
+		var title := Label.new()
+		title.text = data.title if known else "Неизвестное место"
+		title.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		title.add_theme_font_size_override("font_size", 18)
+		box.add_child(title)
+		var text := Label.new()
+		text.text = "%s\n\n%s" % [GameState.BIOMES.for_habitat(data.habitat).display_name, data.clue]
+		text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		text.add_theme_font_size_override("font_size", 16)
+		box.add_child(text)
+		if known:
+			var spacer := Control.new()
+			spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+			box.add_child(spacer)
+			var button := Button.new()
+			button.name = "ReadEntryButton"
+			button.text = "Читать запись"
+			button.add_theme_font_size_override("font_size", 16)
+			button.focus_mode = Control.FOCUS_NONE
+			button.pressed.connect(landmark_selected.emit.bind(data))
+			box.add_child(button)
+		_grid.add_child(panel)
 
 
 func _make_card(fish: FishData, entry: Dictionary) -> Control:

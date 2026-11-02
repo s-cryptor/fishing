@@ -28,6 +28,11 @@ func _build() -> void:
 	CottageArt.build(house)
 	HarborProps.garden(self)
 	HarborProps.lilies(self)
+	for data in GameState.LANDMARKS.landmarks:
+		var landmark := LandmarkPoint.new()
+		landmark.data = data
+		landmark.position = data.position
+		add_child(landmark)
 	for point in [Vector3(73, 0.5, -3), Vector3(85, 0.5, -6), Vector3(87, 0.5, 4), Vector3(76, 0.5, 6)]:
 		NatureArt.tree(self, point, true)
 		var body := StaticBody3D.new()

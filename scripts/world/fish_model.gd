@@ -57,7 +57,7 @@ func build(fish: FishData) -> void:
 		var span := 0.42 if flat else (0.8 if fish.id == &"sawfish" else 0.58)
 		art.triangle(Vector3(0.3, -0.04, z), Vector3(-0.3, -0.38 * height, side * span * depth), Vector3(-0.08, 0.04, z), fin)
 		art.triangle(Vector3(-0.5, -0.25 * height, 0), Vector3(-0.8, -0.64 * height, side * 0.16), Vector3(-0.15, -0.4 * height, 0), fin)
-		if not flat:
+		if not flat and fish.id != &"sawfish":
 			var eye := Vector3(0.88, 0.12 * height, side * 0.205 * depth)
 			art.pebble(eye, Vector3(0.108, 0.108, 0.045), Color("#eee0ad"))
 			art.pebble(eye + Vector3(0.015, 0, side * 0.037), Vector3(0.061, 0.066, 0.016), Color("#183a38"))
@@ -66,8 +66,9 @@ func build(fish: FishData) -> void:
 		art.tube(Vector3(0.58, 0.22 * height, side * 0.25 * depth), Vector3(0.55, -0.2 * height, side * 0.26 * depth), 0.012, fin, 0.008, 5)
 		if fish.id == &"catfish":
 			art.tube(Vector3(1.07, -0.05, side * 0.12), Vector3(1.46, -0.3, side * 0.46), 0.018, base.lightened(0.3), 0.005, 5)
-	if flat:
-		for eye in [Vector3(0.78, 0.10, 0.12), Vector3(0.6, 0.10, 0.32)]:
+	if flat or fish.id == &"sawfish":
+		var eyes := [Vector3(0.78, 0.10, 0.12), Vector3(0.6, 0.10, 0.32)] if flat else [Vector3(0.85, 0.13, -0.15), Vector3(0.85, 0.13, 0.15)]
+		for eye in eyes:
 			art.pebble(eye, Vector3(0.08, 0.035, 0.08), Color("#d9d5ac"))
 			art.pebble(eye + Vector3.UP * 0.03, Vector3(0.045, 0.012, 0.045), Color("#183a38"))
 	if fish.id == &"sawfish":

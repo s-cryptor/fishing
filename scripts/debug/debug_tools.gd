@@ -167,7 +167,7 @@ func _apply_start_overrides() -> void:
 						child._lifetime = 300.0
 						break
 	if _gallery:
-		if save_path.is_empty() or save_path == "user://save.json":
+		if save_path.is_empty() or ProjectSettings.globalize_path(save_path).simplify_path() == ProjectSettings.globalize_path("user://save.json").simplify_path():
 			push_warning("Демо-коллекция требует отдельный --save, чтобы не менять основной прогресс")
 		else:
 			for fish in GameState.catalog.fish:

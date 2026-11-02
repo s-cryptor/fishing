@@ -6,7 +6,7 @@
 script = ExtResource("1")
 display_name = "Смесь Луки"
 description = "10 порций. Клюёт на 35% быстрее, удача +50%. Одна порция на заброс в воду. Можно выключить перед забросом."
-price = 30
+price = 45
 charges = 10
 luck_bonus = 0.5
 bite_time_mult = 0.65

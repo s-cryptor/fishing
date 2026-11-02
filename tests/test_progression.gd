@@ -17,8 +17,9 @@ func _run() -> void:
 	state.claimed_goals.clear()
 	state.visited_biomes.assign(["home_lake"])
 	state.sales = 0
-	state.owned_gear.assign(["bamboo_rod"])
-	state.equipped_gear_id = "bamboo_rod"
+	var starter := String(state.gear_catalog.rods[0].id)
+	state.owned_gear.assign([starter])
+	state.equipped_gear_id = starter
 	var fish: FishData = state.catalog.get_fish(&"roach")
 	state.register_catch(fish, fish.min_weight_kg)
 	_check("first_catch" in state.claimed_goals, "первый улов открывает награду")

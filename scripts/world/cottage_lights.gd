@@ -8,7 +8,8 @@ var _lights: Array[OmniLight3D] = []
 func _ready() -> void:
 	_glass.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	for data in [[Vector3(-1.1, 1.55, 1.88), Vector3(0.8, 0.74, 0.035)],
-			[Vector3(-2.12, 1.55, 0.1), Vector3(0.035, 0.74, 0.8)]]:
+			[Vector3(-2.12, 1.55, 0.1), Vector3(0.035, 0.74, 0.8)],
+			[Vector3(-0.75, 1.55, -1.88), Vector3(0.9, 0.8, 0.035)]]:
 		var window := MeshInstance3D.new()
 		var box := BoxMesh.new()
 		box.size = data[1]
@@ -17,7 +18,7 @@ func _ready() -> void:
 		window.material_override = _glass
 		add_child(window)
 		var light := OmniLight3D.new()
-		light.position = data[0] + Vector3(-0.25, 0, 0.3)
+		light.position = data[0] + Vector3(-0.25, 0, 0.3 * signf(data[0].z))
 		light.light_color = Color("#efba72")
 		light.omni_range = 4.0
 		add_child(light)

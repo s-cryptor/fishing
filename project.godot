@@ -72,6 +72,27 @@ pause={
 "events": [Object(InputEventKey,"device":-1,"physical_keycode":4194305), Object(InputEventJoypadButton,"device":-1,"button_index":6)]
 }
 
+camera_left={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"device":-1,"physical_keycode":81), Object(InputEventJoypadMotion,"device":-1,"axis":2,"axis_value":-1.0)]
+}
+camera_right={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"device":-1,"physical_keycode":82), Object(InputEventJoypadMotion,"device":-1,"axis":2,"axis_value":1.0)]
+}
+camera_zoom_in={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"device":-1,"physical_keycode":61), Object(InputEventJoypadMotion,"device":-1,"axis":3,"axis_value":-1.0)]
+}
+camera_zoom_out={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"device":-1,"physical_keycode":45), Object(InputEventJoypadMotion,"device":-1,"axis":3,"axis_value":1.0)]
+}
+camera_reset={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"device":-1,"physical_keycode":4194317), Object(InputEventJoypadButton,"device":-1,"button_index":8)]
+}
+
 [rendering]
 
 renderer/rendering_method="mobile"

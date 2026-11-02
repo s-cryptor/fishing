@@ -42,6 +42,13 @@ func _run() -> void:
 		for hour in [10, 22]:
 			clock.hour = hour
 			await _capture("world_%s_%d" % [biome[0], hour])
+		clock.hour = 16
+		camera.turn_view(PI * 0.65)
+		camera.zoom_view(-3.0)
+		camera._process(10.0)
+		await _capture("world_%s_orbit" % biome[0])
+		camera.reset_view()
+		camera._process(10.0)
 	clock.hour = 10
 	controller.water = scene.get_node("Lake")
 	hud.set_biome(controller.water.biome)
@@ -50,6 +57,33 @@ func _run() -> void:
 		clock.hour = neighbor[1]
 		camera.snap_to_target()
 		await _capture("neighbor_%s" % neighbor[2])
+	# Предпросмотр без выпуска заброса: не расходует еду и не пишет демо-прогресс.
+	var old_gear: String = state.equipped_gear_id
+	state.equipped_gear_id = "abyss"
+	state.gear_changed.emit()
+	player.position = Vector3(0, 0.6, -9)
+	player.face_direction(Vector3.FORWARD, 1.0)
+	controller.set_process(false)
+	controller._start_charge()
+	controller._charge_time = 1.0
+	controller._update_preview()
+	hud.show_charge(1.0)
+	player.fishing_pose(true, 1.0, 0.0, false)
+	for view in [[PI * 0.5, "side"], [-PI * 0.25, "diagonal"]]:
+		camera.reset_view()
+		camera.turn_view(view[0])
+		camera.zoom_view(-6.0)
+		camera._process(10.0)
+		await _capture("cast_orbit_%s" % view[1])
+	controller._to_idle()
+	controller._preview.hide()
+	controller._cast_guide.hide()
+	hud.hide_charge()
+	controller.set_process(true)
+	state.equipped_gear_id = old_gear
+	state.gear_changed.emit()
+	camera.reset_view()
+	camera._process(10.0)
 	clock.hour = 10
 	player.position = Vector3(0, 0.6, -3)
 	camera.snap_to_target()

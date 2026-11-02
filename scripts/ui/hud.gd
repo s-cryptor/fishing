@@ -10,6 +10,7 @@ var _touch_available := false
 var _fishing_focus := false
 var _sailing_active := false
 var _sailing_available := false
+var _return_to_collection := false
 
 @onready var _money_label: Label = %MoneyLabel
 @onready var _gear_label: Label = %GearLabel
@@ -59,7 +60,8 @@ func _ready() -> void:
 	_travel_button.pressed.connect(travel_requested.emit)
 	%SailButton.pressed.connect(sailing_requested.emit)
 	%CollectionButton.pressed.connect(_toggle_collection)
-	_catch_popup.closed.connect(catch_popup_closed.emit)
+	_catch_popup.closed.connect(_on_catch_popup_closed)
+	_collection.fish_selected.connect(_inspect_fish)
 	_sell_button.icon = load("res://assets/ui/fish.svg")
 	%CollectionButton.icon = load("res://assets/ui/book.svg")
 	_shop_button.icon = load("res://assets/ui/chat.svg")
@@ -288,6 +290,25 @@ func close_catch_popup() -> void:
 	_catch_popup.close()
 
 
+func _inspect_fish(fish: FishData) -> void:
+	if not _collection.visible:
+		return
+	var entry: Dictionary = GameState.collection.get(String(fish.id), {})
+	if entry.is_empty():
+		return
+	_return_to_collection = true
+	_collection.hide()
+	_catch_popup.inspect(fish, entry)
+
+
+func _on_catch_popup_closed() -> void:
+	if _return_to_collection:
+		_return_to_collection = false
+		_collection.show()
+	else:
+		catch_popup_closed.emit()
+
+
 func _refresh_wallet() -> void:
 	_money_label.text = "%d монет" % GameState.money
 	var count := GameState.inventory.size()
@@ -300,6 +321,8 @@ func _refresh_gear() -> void:
 
 
 func _open_shop() -> void:
+	if _catch_popup.visible:
+		return
 	var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
 	if controller and controller.phase != FishingController.Phase.IDLE:
 		return
@@ -308,6 +331,9 @@ func _open_shop() -> void:
 
 
 func _toggle_collection() -> void:
+	if _return_to_collection:
+		_catch_popup.close()
+		return
 	var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
 	if controller and controller.phase != FishingController.Phase.IDLE:
 		return

@@ -22,6 +22,8 @@ extends Node
 ##   --seed=N            воспроизводимая последовательность случайных чисел
 ##   --showcase=FISH_ID   показать объёмный трофей без добавления улова в сохранение
 ##   --aim-spot          разместить стаю в точке заброса 95% для проверки точности
+##   --gallery           демо-коллекция (только с отдельным --save)
+##   --inspect=FISH_ID    открыть трофей из коллекции (совместимо с --gallery)
 ##   При --quit-after в лог печатается позиция игрока.
 
 var autoplay := false
@@ -51,6 +53,8 @@ var _mute := false
 var _seed_value: Variant = null
 var _showcase := ""
 var _aim_spot := false
+var _gallery := false
+var _inspect := ""
 
 
 func _init() -> void:
@@ -79,6 +83,8 @@ func _init() -> void:
 			"--seed": _seed_value = value.to_int()
 			"--showcase": _showcase = value
 			"--aim-spot": _aim_spot = true
+			"--gallery": _gallery = true
+			"--inspect": _inspect = value
 			"--action":
 				var action_time := value.split("@")
 				_scheduled_actions.append([StringName(action_time[0]), action_time[1].to_float()])
@@ -160,6 +166,22 @@ func _apply_start_overrides() -> void:
 						child.global_position = point
 						child._lifetime = 300.0
 						break
+	if _gallery:
+		if save_path.is_empty() or ProjectSettings.globalize_path(save_path).simplify_path() == ProjectSettings.globalize_path("user://save.json").simplify_path():
+			push_warning("Демо-коллекция требует отдельный --save, чтобы не менять основной прогресс")
+		else:
+			for fish in GameState.catalog.fish:
+				GameState.collection[String(fish.id)] = {"count": 7, "best_kg": lerpf(fish.min_weight_kg, fish.max_weight_kg, 0.9)}
+			var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
+			if controller:
+				controller.hud._toggle_collection()
+	if not _inspect.is_empty():
+		var fish := GameState.catalog.get_fish(StringName(_inspect))
+		var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
+		if fish and controller:
+			if not controller.hud.is_modal_open():
+				controller.hud._toggle_collection()
+			controller.hud._inspect_fish(fish)
 
 
 func _process(delta: float) -> void:

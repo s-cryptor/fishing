@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scripts/ui/collection_panel.gd" id="7_collection"]
 [ext_resource type="Script" path="res://scripts/ui/shop_panel.gd" id="8_shop"]
 [ext_resource type="Script" path="res://scripts/ui/orders_tracker.gd" id="9_orders"]
+[ext_resource type="Script" path="res://scripts/ui/fish_portrait.gd" id="10_portrait"]
 
 [sub_resource type="StyleBoxFlat" id="orders_panel"]
 bg_color = Color(0.08, 0.12, 0.18, 0.6)
@@ -312,10 +313,11 @@ theme_override_font_sizes/font_size = 30
 text = "Улов!"
 horizontal_alignment = 1
 
-[node name="Swatch" type="ColorRect" parent="Root/CatchPopup/VBox"]
+[node name="Swatch" type="Control" parent="Root/CatchPopup/VBox"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
+script = ExtResource("10_portrait")
 
 [node name="FishName" type="Label" parent="Root/CatchPopup/VBox"]
 unique_name_in_owner = true

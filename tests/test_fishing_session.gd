@@ -15,6 +15,7 @@ var _failures := 0
 
 func _initialize() -> void:
 	test_catalog_loaded()
+	test_biomes_have_fish()
 	test_same_seed_same_outcome()
 	test_missed_bite()
 	test_idle_lets_fish_escape()
@@ -28,8 +29,16 @@ func _initialize() -> void:
 
 
 func test_catalog_loaded() -> void:
-	_check(CATALOG.fish.size() == 6, "в каталоге 6 видов")
+	_check(CATALOG.fish.size() == 10, "в каталоге 10 видов")
 	_check(CATALOG.for_habitat(&"lake").size() == 6, "все виды водятся в озере")
+	_check(CATALOG.for_habitat(&"mangrove").size() == 4, "в манграх 4 новых вида")
+
+
+func test_biomes_have_fish() -> void:
+	for habitat in [&"lake", &"mangrove"]:
+		for phase in DayTime.Phase.values():
+			_check(not CATALOG.biting(habitat, phase).is_empty(),
+					"%s: есть клёв в фазе %s" % [habitat, DayTime.PHASE_NAMES[phase]])
 
 
 func test_same_seed_same_outcome() -> void:
@@ -69,6 +78,7 @@ func test_orders() -> void:
 	for i in OrderBook.TUTORIAL_ORDERS:
 		var first_fish := CATALOG.get_fish(StringName(book.orders[i]["fish_id"]))
 		_check(first_fish.rarity == FishData.Rarity.COMMON, "обучающий заказ %d — на обычную рыбу" % (i + 1))
+		_check(&"lake" in first_fish.habitats, "обучающий заказ доступен на родном озере")
 
 	var feasible := true
 	for i in 500:

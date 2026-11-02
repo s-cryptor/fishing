@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="FishData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/fish_data.gd" id="1_fish"]
+
+[resource]
+script = ExtResource("1_fish")
+id = &"sawfish"
+display_name = "Рыба-пила"
+description = "Редкая гостья отмелей. Тяжёлая, быстрая и опасная для тонкой лески."
+rarity = 3
+color = Color(0.38, 0.5, 0.52, 1)
+min_weight_kg = 8.0
+max_weight_kg = 35.0
+price_per_kg = 32.0
+strength = 0.82
+thrash_rate = 0.48
+stamina = 14.0
+spawn_weight = 3.0
+habitats = Array[StringName]([&"mangrove"])
+active_times = 13

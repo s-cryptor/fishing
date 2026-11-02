@@ -25,3 +25,8 @@ func _process(delta: float) -> void:
 	if focus and focus.visible:
 		goal = goal.lerp(focus.global_position, 0.5)
 	global_position = global_position.lerp(goal, 1.0 - exp(-follow_speed * delta))
+
+
+func snap_to_target() -> void:
+	if target:
+		global_position = target.global_position

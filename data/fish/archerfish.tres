@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="FishData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/fish_data.gd" id="1_fish"]
+
+[resource]
+script = ExtResource("1_fish")
+id = &"archerfish"
+display_name = "Брызгун"
+description = "Сбивает насекомых меткой струёй воды из-под мангровых ветвей."
+rarity = 1
+color = Color(0.76, 0.72, 0.38, 1)
+min_weight_kg = 0.2
+max_weight_kg = 1.1
+price_per_kg = 55.0
+strength = 0.38
+thrash_rate = 0.42
+stamina = 6.5
+spawn_weight = 45.0
+habitats = Array[StringName]([&"mangrove"])
+active_times = 7

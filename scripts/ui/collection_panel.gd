@@ -31,7 +31,7 @@ func _rebuild() -> void:
 		if not entry.is_empty():
 			known += 1
 		_grid.add_child(_make_card(fish, entry))
-	_header.text = "Коллекция: озеро  %d / %d" % [known, catalog.fish.size()]
+	_header.text = "Коллекция видов: %d / %d" % [known, catalog.fish.size()]
 
 
 func _make_card(fish: FishData, entry: Dictionary) -> Control:

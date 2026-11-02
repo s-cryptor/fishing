@@ -40,7 +40,7 @@ func generate(seed_value: int) -> Dictionary:
 	# Просим чаще обычную рыбу, но не только её.
 	var pool := _catalog.fish
 	if seed_value < TUTORIAL_ORDERS:
-		pool = pool.filter(func(f: FishData) -> bool: return f.rarity == FishData.Rarity.COMMON)
+		pool = pool.filter(func(f: FishData) -> bool: return f.rarity == FishData.Rarity.COMMON and &"lake" in f.habitats)
 	var weights := PackedFloat32Array()
 	for f in pool:
 		weights.append(sqrt(f.spawn_weight))

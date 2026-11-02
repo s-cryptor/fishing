@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="FishData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/fish_data.gd" id="1_fish"]
+
+[resource]
+script = ExtResource("1_fish")
+id = &"tilapia"
+display_name = "Тилапия"
+description = "Неприхотливая обитательница тёплых мелководий."
+rarity = 0
+color = Color(0.55, 0.68, 0.46, 1)
+min_weight_kg = 0.3
+max_weight_kg = 2.0
+price_per_kg = 24.0
+strength = 0.3
+thrash_rate = 0.28
+stamina = 5.5
+spawn_weight = 85.0
+habitats = Array[StringName]([&"mangrove"])
+active_times = 15

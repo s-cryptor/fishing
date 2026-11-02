@@ -46,12 +46,8 @@ func _ready() -> void:
 		add_child(node)
 		_drops.append(node)
 		_velocities.append(Vector3.ZERO)
-	var art := ArtMesh.new()
-	art.pebble(Vector3.ZERO, Vector3(0.22, 0.018, 0.56), Color.WHITE)
-	art.triangle(Vector3(0, 0, -0.36), Vector3(-0.24, 0, -0.75), Vector3(0.24, 0, -0.75), Color.WHITE)
-	_shadow = art.instance(self, "FishSilhouette")
-	_shadow.material_override = _material(Color(0.08, 0.25, 0.25, 0.28))
-	_shadow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_shadow = FishSilhouette.create(self)
+	_shadow.name = "FishSilhouette"
 	reset()
 
 

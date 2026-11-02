@@ -25,13 +25,15 @@ radius = 0.5
 height = 0.04
 
 [sub_resource type="StandardMaterial3D" id="bubble_mat"]
-albedo_color = Color(0.95, 0.98, 1, 1)
+albedo_color = Color(0.85, 0.92, 0.85, 0.65)
+transparency = 1
+shading_mode = 0
 roughness = 0.1
 
 [sub_resource type="SphereMesh" id="bubble_mesh"]
 material = SubResource("bubble_mat")
-radius = 0.09
-height = 0.18
+radius = 0.045
+height = 0.09
 radial_segments = 8
 rings = 4
 

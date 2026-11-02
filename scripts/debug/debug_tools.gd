@@ -21,6 +21,7 @@ extends Node
 ##   --mute              без звука (включается сам при --shots)
 ##   --seed=N            воспроизводимая последовательность случайных чисел
 ##   --showcase=FISH_ID   показать объёмный трофей без добавления улова в сохранение
+##   --aim-spot          разместить стаю в точке заброса 95% для проверки точности
 ##   При --quit-after в лог печатается позиция игрока.
 
 var autoplay := false
@@ -49,6 +50,7 @@ var _held_actions: Array[StringName] = []
 var _mute := false
 var _seed_value: Variant = null
 var _showcase := ""
+var _aim_spot := false
 
 
 func _init() -> void:
@@ -76,9 +78,13 @@ func _init() -> void:
 			"--mute": _mute = true
 			"--seed": _seed_value = value.to_int()
 			"--showcase": _showcase = value
+			"--aim-spot": _aim_spot = true
 			"--action":
 				var action_time := value.split("@")
 				_scheduled_actions.append([StringName(action_time[0]), action_time[1].to_float()])
+	# Фиксируем seed до создания сцены, включая начальные места появления стай.
+	if _seed_value != null:
+		seed(_seed_value)
 	if _shots_dir:
 		DirAccess.make_dir_recursive_absolute(_shots_dir)
 	automated = autoplay or not _shots_dir.is_empty() or _quit_after > 0.0
@@ -93,8 +99,6 @@ func _ready() -> void:
 
 
 func _apply_start_overrides() -> void:
-	if _seed_value != null:
-		seed(_seed_value)
 	if not _start_biome.is_empty():
 		var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
 		if controller:
@@ -135,13 +139,27 @@ func _apply_start_overrides() -> void:
 			var nearest: Node3D
 			var distance := INF
 			for dock in get_tree().get_nodes_in_group(&"boat_dock"):
-				var d: float = dock.global_position.distance_to(controller.water.global_position)
+				if dock.global_position.distance_to(controller.water.global_position) > 25:
+					continue
+				var d: float = dock.global_position.distance_to(controller.player.global_position)
 				if d < distance:
 					nearest = dock
 					distance = d
 			if nearest:
 				controller.player.global_position = nearest.to_global(Vector3(0, 0.15, 0.8))
 				captain.launch(nearest)
+	if _aim_spot:
+		var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
+		if controller:
+			var distance := lerpf(GameState.gear.min_cast_m, GameState.gear.max_cast_m, 0.95)
+			var point := controller.player.global_position + controller.player.facing_direction() * distance
+			point.y = controller.water.water_level + 0.02
+			if controller.water.is_water(point):
+				for child in controller.water.get_children():
+					if child is FishingSpot:
+						child.global_position = point
+						child._lifetime = 300.0
+						break
 
 
 func _process(delta: float) -> void:

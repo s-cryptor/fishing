@@ -15,6 +15,8 @@
 [ext_resource type="PackedScene" path="res://scenes/boat_dock.tscn" id="13_dock"]
 [ext_resource type="Resource" path="res://data/biomes/home_lake.tres" id="14_home"]
 [ext_resource type="Resource" path="res://data/biomes/mangrove_shallows.tres" id="15_mangrove"]
+[ext_resource type="Shader" path="res://shaders/water.gdshader" id="16_water_shader"]
+[ext_resource type="Script" path="res://scripts/world/island_details.gd" id="17_details"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
 sky_top_color = Color(0.32, 0.58, 0.88, 1)
@@ -32,9 +34,8 @@ ambient_light_source = 3
 ambient_light_energy = 0.8
 tonemap_mode = 2
 
-[sub_resource type="StandardMaterial3D" id="water_mat"]
-albedo_color = Color(0.16, 0.5, 0.68, 1)
-roughness = 0.15
+[sub_resource type="ShaderMaterial" id="water_mat"]
+shader = ExtResource("16_water_shader")
 
 [sub_resource type="PlaneMesh" id="water_mesh"]
 material = SubResource("water_mat")
@@ -122,6 +123,9 @@ inner_radius = 0.42
 outer_radius = 0.5
 
 [node name="Main" type="Node3D"]
+
+[node name="IslandDetails" type="Node3D" parent="."]
+script = ExtResource("17_details")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("env")
@@ -252,22 +256,6 @@ shape = SubResource("island_shape")
 
 [node name="ShoreBarrier" type="StaticBody3D" parent="MangroveIsland"]
 script = ExtResource("11_shore")
-
-[node name="Tree1" parent="MangroveIsland" instance=ExtResource("3_tree")]
-position = Vector3(-7, 0.5, -3)
-scale = Vector3(1.5, 0.8, 1.5)
-
-[node name="Tree2" parent="MangroveIsland" instance=ExtResource("3_tree")]
-position = Vector3(5, 0.5, -6)
-scale = Vector3(1.7, 0.9, 1.7)
-
-[node name="Tree3" parent="MangroveIsland" instance=ExtResource("3_tree")]
-position = Vector3(7, 0.5, 4)
-scale = Vector3(1.6, 0.8, 1.6)
-
-[node name="Tree4" parent="MangroveIsland" instance=ExtResource("3_tree")]
-position = Vector3(-4, 0.5, 6)
-scale = Vector3(2, 1, 2)
 
 [node name="MangroveDock" parent="." node_paths=PackedStringArray("destination_water", "arrival_point", "player", "fishing_controller", "camera_rig", "hud") instance=ExtResource("13_dock")]
 position = Vector3(75, 0.5, -10)

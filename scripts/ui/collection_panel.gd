@@ -77,9 +77,10 @@ func _make_card(fish: FishData, entry: Dictionary) -> Control:
 	var box := VBoxContainer.new()
 	box.custom_minimum_size = Vector2(190, 0)
 
-	var swatch := ColorRect.new()
+	var swatch := FishPortrait.new()
 	swatch.custom_minimum_size = Vector2(0, 60)
-	swatch.color = fish.color if caught else UNKNOWN_COLOR
+	swatch.fish = fish
+	swatch.discovered = caught
 	box.add_child(swatch)
 
 	var name_label := Label.new()

@@ -5,7 +5,7 @@ extends PanelContainer
 signal closed
 
 @onready var _title: Label = %Title
-@onready var _swatch: ColorRect = %Swatch
+@onready var _swatch: FishPortrait = %Swatch
 @onready var _name: Label = %FishName
 @onready var _rarity: Label = %Rarity
 @onready var _stats: Label = %Stats
@@ -24,7 +24,7 @@ func open(fish: FishData, weight_kg: float, is_new: bool) -> void:
 		_title.text = "Личный рекорд!"
 	if report.get("trophy", false):
 		_title.text = "Золотой трофей!"
-	_swatch.color = fish.color
+	_swatch.fish = fish
 	_name.text = fish.display_name
 	_rarity.text = fish.rarity_name()
 	_rarity.modulate = fish.rarity_color()

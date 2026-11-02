@@ -46,8 +46,12 @@ jobs:
       - name: Экспорт в веб
         run: |
           mkdir -p build/web
-          ~/godot/godot --headless --path . --export-release Web build/web/index.html
-          test -f build/web/index.wasm
+          # Новые имена не дают браузеру смешать свежий HTML со старым PCK/WASM.
+          build_name="game-${GITHUB_SHA}"
+          ~/godot/godot --headless --path . --export-release Web "build/web/${build_name}.html"
+          mv "build/web/${build_name}.html" build/web/index.html
+          test -f "build/web/${build_name}.wasm"
+          test -f "build/web/${build_name}.pck"
 
       - uses: actions/upload-pages-artifact@v3
         with:

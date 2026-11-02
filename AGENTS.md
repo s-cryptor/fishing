@@ -39,6 +39,7 @@ godot --path . -- --autoplay --shots=/tmp/shots --quit-after=30    # скрин�
 - `.github/workflows/web.yml` на каждый PR и push скачивает Godot (с кэшем), делает импорт, гоняет тесты и выполняет веб-экспорт. Push в `develop` выкладывает сборку на GitHub Pages: **https://s-cryptor.github.io/fishing/**
 - Пресет экспорта `Web` лежит в `export_presets.cfg`. Он однопоточный (`variant/thread_support=false`): COOP/COEP не нужны. `vram_texture_compression/for_mobile=false`, потому что с `true` экспорт падает без включённого импорта ETC2/ASTC.
 - Шаблонов экспорта локально нет. Веб собирается только в CI. Сборки под iOS, Android и Desktop пока не настроены.
+- Веб-файлы экспортируются с SHA коммита в имени, HTML переименовывается в `index.html`: это обходит кэш старых PCK/WASM при обновлении страницы.
 
 ## Архитектура (кратко)
 

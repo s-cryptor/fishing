@@ -3,10 +3,13 @@ extends CanvasLayer
 
 signal catch_popup_closed
 signal travel_requested
+signal sailing_requested
 
 var _action_name := "Пробел"
 var _touch_available := false
 var _fishing_focus := false
+var _sailing_active := false
+var _sailing_available := false
 
 @onready var _money_label: Label = %MoneyLabel
 @onready var _gear_label: Label = %GearLabel
@@ -54,6 +57,7 @@ func _ready() -> void:
 	_sell_button.pressed.connect(_on_sell_pressed)
 	_shop_button.pressed.connect(_open_shop)
 	_travel_button.pressed.connect(travel_requested.emit)
+	%SailButton.pressed.connect(sailing_requested.emit)
 	%CollectionButton.pressed.connect(_toggle_collection)
 	_catch_popup.closed.connect(catch_popup_closed.emit)
 	_sell_button.icon = load("res://assets/ui/fish.svg")
@@ -73,6 +77,8 @@ func _ready() -> void:
 	_travel_button.hide()
 	_travel_fade.hide()
 	%ModalShade.hide()
+	%SailButton.hide()
+	%SailStatus.hide()
 	_refresh_wallet()
 	_refresh_gear()
 	_refresh_journey()
@@ -131,21 +137,59 @@ func fade_in() -> void:
 func _process(_delta: float) -> void:
 	_clock_label.text = "%s · %s" % [WorldClock.clock_text(), WorldClock.phase_name()]
 	_touch_controls.visible = _touch_available and not is_modal_open()
+	%SailButton.visible = _sailing_available and not _fishing_focus and not is_modal_open()
+	%SailStatus.visible = _sailing_active and not _fishing_focus and not is_modal_open()
 	_hint_label.visible = not is_modal_open() and not _hint_label.text.is_empty()
 	%ModalShade.visible = _shop.visible or _collection.visible or _catch_popup.visible
 
 
 func set_fishing_focus(active: bool) -> void:
 	_fishing_focus = active
-	%OrdersTracker.visible = not active
-	%JourneyHint.visible = not active
+	%OrdersTracker.visible = not active and not _sailing_active
+	%JourneyHint.visible = not active and not _sailing_active
 	_refresh_bait()
+	%SailButton.visible = _sailing_available and not active
+	%SailStatus.visible = _sailing_active and not active
+
+
+func set_sailing_available(available: bool, text := "На воду · B") -> void:
+	_sailing_available = available
+	%SailButton.text = text.replace(" · B / E", "").replace(" · B", "") if _touch_available else text
+	if not _touch_available and not Input.get_connected_joypads().is_empty():
+		%SailButton.text = text.replace(" · B / E", " · Y / X").replace(" · B", " · Y")
+	%SailButton.visible = available and not _fishing_focus
+
+
+func set_sailing_mode(active: bool) -> void:
+	_sailing_active = active
+	%OrdersTracker.visible = not active and not _fishing_focus
+	%JourneyHint.visible = not active and not _fishing_focus
+	%SailStatus.visible = active and not _fishing_focus
+	if active:
+		_travel_button.hide()
+
+
+func set_sailing_status(text: String) -> void:
+	%SailStatus.text = text
+
+
+func show_sailing_hint(blocked: bool) -> void:
+	if blocked:
+		set_hint("Здесь мелко или сильное течение · держись открытой воды вокруг острова")
+	elif _touch_available:
+		set_hint("Джойстик — плыть · остановись и забрасывай · у берега нажми «Причалить»")
+	elif not Input.get_connected_joypads().is_empty():
+		set_hint("Стик — плыть · A — заброс · Y / X у причала — на берег")
+	else:
+		set_hint("WASD — плыть · Пробел — заброс · B / E у причала — на берег")
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _travel_fade.visible:
 		return
-	if event.is_action_pressed(&"toggle_collection"):
+	if (event.is_action_pressed(&"sail_action") or (_sailing_active and event.is_action_pressed(&"interact"))) and %SailButton.visible:
+		sailing_requested.emit()
+	elif event.is_action_pressed(&"toggle_collection"):
 		_toggle_collection()
 	elif event.is_action_pressed(&"interact") and _shop_button.visible:
 		if _shop.visible:
@@ -214,6 +258,7 @@ func update_fight(session: FishingSession) -> void:
 	_tension_meter.thrashing = session.is_thrashing
 	_tension_meter.control = session.control
 	%FightReadout.session = session
+	%FightReadout.to_boat = _sailing_active
 	%FightReadout.queue_redraw()
 	var status := "Подматывай · светлая зона даёт бонус контроля"
 	var color := Color("#ede6cc")

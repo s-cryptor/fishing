@@ -2,6 +2,7 @@ extends Control
 ## Две независимые шкалы: расстояние до берега и оставшиеся силы рыбы.
 
 var session: FishingSession
+var to_boat := false
 
 
 func _draw() -> void:
@@ -11,7 +12,7 @@ func _draw() -> void:
 	var width := (size.x - 28.0) * 0.5
 	var ink := Color("#ede6cc")
 	var muted := Color("#91afa0")
-	draw_string(font, Vector2(0, 14), "До берега  %.1f м" % session.distance_to_land(), HORIZONTAL_ALIGNMENT_LEFT, width, 15, ink)
+	draw_string(font, Vector2(0, 14), "%s  %.1f м" % ["До лодки" if to_boat else "До берега", session.distance_to_land()], HORIZONTAL_ALIGNMENT_LEFT, width, 15, ink)
 	draw_string(font, Vector2(width + 28, 14), "Силы рыбы  %d%%" % roundi(session.stamina_ratio() * 100), HORIZONTAL_ALIGNMENT_LEFT, width, 15, ink)
 	var ratio := clampf(session.distance_to_land() / maxf(0.01, maxf(session.initial_distance, session.distance) - session.landing_distance), 0, 1)
 	_bar(Rect2(0, 27, width, 5), 1.0 - ratio, Color("#d8be82"))

@@ -15,5 +15,7 @@ run_check() {
 
 run_check --headless --path . --editor --import --quit
 run_check --headless --path . -s res://tests/test_fishing_session.gd -- --save=user://logic-test.json --mute
+run_check --headless --path . -s res://tests/test_boat_session.gd -- --save=user://sailing-test.json --mute
+run_check --headless --path . -s res://tests/test_boat_sailing.gd -- --save=user://sailing-scene-test.json --mute
 run_check --headless --path . -s res://tests/test_boat_travel.gd -- --save=user://boat-test.json --mute
 run_check --headless --path . -s res://tests/test_progression.gd -- --save=user://progression-test.json --mute

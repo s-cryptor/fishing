@@ -11,6 +11,7 @@ extends Node
 ##   --money=N           выдать N монет при старте
 ##   --bait=N            выдать N порций приманки и включить её
 ##   --boat              показать улучшенную лодку
+##   --sail              начать прогулку с ближайшего причала текущего биома
 ##   --biome=ID          начать в habitat: lake, mangrove, fjord
 ##   --teleport=X,Z      поставить игрока в точку острова
 ##   --action=NAME@SEC   нажать input action через SEC секунд (можно несколько раз)
@@ -39,6 +40,7 @@ var _result_wait := 0.0
 var _money := -1
 var _bait := -1
 var _boat := false
+var _sail := false
 var _start_biome := ""
 var _teleport: Variant = null
 ## [[action, time], ...] — ещё не нажатые.
@@ -63,6 +65,7 @@ func _init() -> void:
 			"--money": _money = value.to_int()
 			"--bait": _bait = value.to_int()
 			"--boat": _boat = true
+			"--sail": _sail = true
 			"--biome": _start_biome = value
 			"--teleport":
 				var xz := value.split_floats(",")
@@ -125,6 +128,20 @@ func _apply_start_overrides() -> void:
 			controller.hud.set_fishing_focus(true)
 			controller.hud.set_hint("")
 			controller.hud.show_catch(fish, fish.max_weight_kg * 0.9, false)
+	elif _sail:
+		var captain := get_tree().get_first_node_in_group(&"boat_sailing") as BoatSailing
+		var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
+		if captain and controller:
+			var nearest: Node3D
+			var distance := INF
+			for dock in get_tree().get_nodes_in_group(&"boat_dock"):
+				var d: float = dock.global_position.distance_to(controller.water.global_position)
+				if d < distance:
+					nearest = dock
+					distance = d
+			if nearest:
+				controller.player.global_position = nearest.to_global(Vector3(0, 0.15, 0.8))
+				captain.launch(nearest)
 
 
 func _process(delta: float) -> void:

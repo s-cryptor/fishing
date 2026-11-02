@@ -7,3 +7,4 @@ extends Resource
 @export_multiline var description := ""
 @export var price := 0
 @export var scouting_luck := 0.0
+@export var sailing_speed := 8.0

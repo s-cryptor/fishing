@@ -30,6 +30,8 @@ var _preview: MeshInstance3D
 var _preview_material: StandardMaterial3D
 var _preview_label: Label3D
 var _fight_time := 0.0
+var _cast_guide: MeshInstance3D
+var _guide_mesh := ImmediateMesh.new()
 
 
 func _ready() -> void:
@@ -55,6 +57,7 @@ func _process(delta: float) -> void:
 			if Input.is_action_just_pressed(ACTION) and not hud.is_modal_open():
 				_start_charge()
 		Phase.CHARGING:
+			_aim_with_movement(delta)
 			_charge_time += delta
 			hud.show_charge(cast_power())
 			_update_preview()
@@ -72,12 +75,14 @@ func _start_charge() -> void:
 	phase = Phase.CHARGING
 	_charge_time = 0.0
 	player.can_move = false
-	hud.set_hint("Отпусти {action}, когда шкала наберёт нужную силу")
+	hud.show_charge_hint()
 	_update_preview()
+	camera_rig.focus = _preview
 
 
 func _release_cast() -> void:
 	_preview.hide()
+	_cast_guide.hide()
 	hud.hide_charge()
 	var gear := GameState.fishing_gear(water.habitat_id())
 	_cast_dir = player.facing_direction()
@@ -226,6 +231,7 @@ func _to_idle() -> void:
 	hud.set_fishing_focus(false)
 	phase = Phase.IDLE
 	player.can_move = true
+	camera_rig.focus = null
 	hud.show_idle_hint()
 
 
@@ -248,6 +254,16 @@ func _create_preview() -> void:
 	_preview_label.position.y = 0.7
 	_preview.add_child(_preview_label)
 	_preview.hide()
+	_cast_guide = MeshInstance3D.new()
+	_cast_guide.mesh = _guide_mesh
+	_cast_guide.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var guide_material := StandardMaterial3D.new()
+	guide_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	guide_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	guide_material.albedo_color = Color(0.9, 0.88, 0.72, 0.45)
+	_cast_guide.material_override = guide_material
+	add_child(_cast_guide)
+	_cast_guide.hide()
 
 
 func _update_preview() -> void:
@@ -261,3 +277,53 @@ func _update_preview() -> void:
 	_preview_material.albedo_color = Color("#ffda78") if spot else (Color("#8fe8cb") if valid else Color("#f08080"))
 	_preview_label.text = "%.1f м%s" % [distance, " · точный заброс!" if precise else (" · рыбное место" if spot else ("" if valid else " · суша"))]
 	_preview.show()
+	_update_cast_guide(point)
+
+
+func _aim_with_movement(delta: float) -> void:
+	var input := Input.get_vector(&"move_left", &"move_right", &"move_forward", &"move_back")
+	if input.length_squared() < 0.04:
+		return
+	var direction := Vector3(input.x, 0, input.y)
+	var camera := get_viewport().get_camera_3d()
+	if camera:
+		direction = direction.rotated(Vector3.UP, camera.global_rotation.y)
+	player.face_direction(direction, 1.0 - exp(-14 * delta))
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if phase != Phase.CHARGING or DisplayServer.is_touchscreen_available() or DebugTools.touch_ui:
+		return
+	if event is InputEventMouseMotion and event.relative.length_squared() > 0.1:
+		aim_at_screen(event.position)
+
+
+func aim_at_screen(screen_point: Vector2) -> bool:
+	if phase != Phase.CHARGING:
+		return false
+	var camera := get_viewport().get_camera_3d()
+	if camera == null:
+		return false
+	var plane := Plane(Vector3.UP, water.water_level)
+	var point: Variant = plane.intersects_ray(camera.project_ray_origin(screen_point), camera.project_ray_normal(screen_point))
+	if point == null:
+		return false
+	var direction: Vector3 = point - player.global_position
+	direction.y = 0
+	if direction.length_squared() < 0.25:
+		return false
+	player.face_direction(direction.normalized())
+	return true
+
+
+func _update_cast_guide(point: Vector3) -> void:
+	var start := player.rod_tip.global_position
+	var height := start.distance_to(point) * 0.35
+	_guide_mesh.clear_surfaces()
+	_guide_mesh.surface_begin(Mesh.PRIMITIVE_LINES)
+	for segment in range(0, 32, 2):
+		for end in [segment, segment + 1]:
+			var t: float = end / 32.0
+			_guide_mesh.surface_add_vertex(start.lerp(point, t) + Vector3.UP * sin(t * PI) * height)
+	_guide_mesh.surface_end()
+	_cast_guide.show()

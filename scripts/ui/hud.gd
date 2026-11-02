@@ -14,6 +14,7 @@ var _sailing_available := false
 var _return_to_collection := false
 var _return_from_landmark := false
 var _nearby_landmark: LandmarkData
+var _hint_template := ""
 
 @onready var _money_label: Label = %MoneyLabel
 @onready var _gear_label: Label = %GearLabel
@@ -47,6 +48,24 @@ func _ready() -> void:
 	_touch_controls.visible = touch
 	if touch:
 		_action_name = "кнопку"
+	elif not Input.get_connected_joypads().is_empty():
+		_action_name = "A / Cross"
+	Input.joy_connection_changed.connect(func(_device: int, _connected: bool) -> void:
+		_action_name = "кнопку" if _touch_available else ("A / Cross" if not Input.get_connected_joypads().is_empty() else "Пробел")
+		_hint_label.text = _hint_template.format({"action": _action_name})
+		if _nearby_landmark:
+			set_landmark_available(_nearby_landmark)
+		if _sailing_available:
+			set_sailing_available(true, "Причалить · B / E" if _sailing_active else "На воду · B")
+		var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
+		if controller:
+			if controller.phase == FishingController.Phase.CHARGING:
+				show_charge_hint()
+			elif controller.phase == FishingController.Phase.IDLE:
+				if _sailing_active:
+					show_sailing_hint(false)
+				else:
+					show_idle_hint())
 
 	GameState.money_changed.connect(func(_m: int) -> void:
 		Sfx.play(&"coins", -4.0)
@@ -255,7 +274,17 @@ func set_shop_available(available: bool) -> void:
 
 ## {action} в тексте заменяется на «Пробел» или «кнопку» в зависимости от устройства.
 func set_hint(text: String) -> void:
+	_hint_template = text
 	_hint_label.text = text.format({"action": _action_name})
+
+
+func show_charge_hint() -> void:
+	if _touch_available:
+		set_hint("Джойстик — прицел · отпусти {action} для заброса")
+	elif not Input.get_connected_joypads().is_empty():
+		set_hint("Стик — прицел · отпусти {action} для заброса")
+	else:
+		set_hint("Мышь / WASD — прицел · отпусти {action} для заброса")
 
 
 func show_idle_hint() -> void:
@@ -264,7 +293,7 @@ func show_idle_hint() -> void:
 	elif not Input.get_connected_joypads().is_empty():
 		set_hint("A / Cross — заброс · X — разговор · Start — пауза")
 	else:
-		set_hint("Удерживай Пробел — заброс · C — коллекция · Esc — пауза")
+		set_hint("Пробел — заброс · мышь / WASD — прицел · C — журнал · Esc — пауза")
 
 
 func toast(text: String) -> void:

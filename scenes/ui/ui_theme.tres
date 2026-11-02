@@ -63,7 +63,7 @@ corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 
 [sub_resource type="StyleBoxFlat" id="bar_fill"]
-bg_color = Color(1, 0.71, 0.18, 1)
+bg_color = Color(0.83, 0.73, 0.47, 1)
 corner_radius_top_left = 6
 corner_radius_top_right = 6
 corner_radius_bottom_right = 6

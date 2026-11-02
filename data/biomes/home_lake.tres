@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="1_biome"]
+
+[resource]
+script = ExtResource("1_biome")
+id = &"home_lake"
+display_name = "Родное озеро"
+habitat = &"lake"
+description = "Тихое пресное озеро у дома. Здесь удобно учиться рыбалке."
+accent_color = Color(0.22, 0.62, 0.82, 1)

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="BiomeData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/biome_data.gd" id="1_biome"]
+
+[resource]
+script = ExtResource("1_biome")
+id = &"mangrove_shallows"
+display_name = "Мангровые отмели"
+habitat = &"mangrove"
+description = "Тёплые солоноватые воды среди мангровых корней."
+accent_color = Color(0.18, 0.7, 0.55, 1)

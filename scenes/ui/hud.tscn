@@ -65,6 +65,13 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.92, 0.7, 0.9)
 theme_override_font_sizes/font_size = 18
 
+[node name="BiomeLabel" type="Label" parent="Root/TopBar/Wallet"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.22, 0.62, 0.82, 1)
+theme_override_font_sizes/font_size = 18
+text = "Родное озеро"
+
 [node name="Spacer" type="Control" parent="Root/TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3
@@ -77,6 +84,14 @@ size_flags_vertical = 0
 focus_mode = 0
 theme_override_colors/font_color = Color(1, 0.88, 0.4, 1)
 text = "Магазин снастей"
+
+[node name="TravelButton" type="Button" parent="Root/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+focus_mode = 0
+theme_override_colors/font_color = Color(0.55, 1, 0.78, 1)
+text = "Плыть"
 
 [node name="SellButton" type="Button" parent="Root/TopBar"]
 unique_name_in_owner = true
@@ -201,6 +216,34 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+
+[node name="TravelFade" type="ColorRect" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.025, 0.08, 0.11, 1)
+
+[node name="TravelLabel" type="Label" parent="Root/TravelFade"]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -40.0
+offset_right = 320.0
+offset_bottom = 40.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.75, 1, 0.88, 1)
+theme_override_font_sizes/font_size = 30
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Joystick" type="VirtualJoystick" parent="Root/TouchControls"]
 layout_mode = 1

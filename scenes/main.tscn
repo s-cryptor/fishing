@@ -12,6 +12,9 @@
 [ext_resource type="PackedScene" path="res://scenes/fishing_spot.tscn" id="10_spot"]
 [ext_resource type="Script" path="res://scripts/world/shore_barrier.gd" id="11_shore"]
 [ext_resource type="Script" path="res://scripts/world/day_night_lighting.gd" id="12_daynight"]
+[ext_resource type="PackedScene" path="res://scenes/boat_dock.tscn" id="13_dock"]
+[ext_resource type="Resource" path="res://data/biomes/home_lake.tres" id="14_home"]
+[ext_resource type="Resource" path="res://data/biomes/mangrove_shallows.tres" id="15_mangrove"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
 sky_top_color = Color(0.32, 0.58, 0.88, 1)
@@ -60,6 +63,12 @@ radial_segments = 48
 [sub_resource type="CylinderShape3D" id="island_shape"]
 height = 2.0
 radius = 12.6
+
+[sub_resource type="StandardMaterial3D" id="mangrove_grass_mat"]
+albedo_color = Color(0.25, 0.49, 0.32, 1)
+
+[sub_resource type="StandardMaterial3D" id="mangrove_sand_mat"]
+albedo_color = Color(0.7, 0.65, 0.4, 1)
 
 [sub_resource type="StandardMaterial3D" id="wall_mat"]
 albedo_color = Color(0.96, 0.92, 0.82, 1)
@@ -128,6 +137,7 @@ environment = NodePath("../WorldEnvironment")
 
 [node name="Lake" type="Node3D" parent="."]
 script = ExtResource("1_water")
+biome = ExtResource("14_home")
 
 [node name="Water" type="MeshInstance3D" parent="Lake"]
 mesh = SubResource("water_mesh")
@@ -198,6 +208,75 @@ transform = Transform3D(0.8, 0, 0, 0, 0.8, 0, 0, 0, 0.8, 8.5, 0.5, -1)
 
 [node name="Player" parent="." instance=ExtResource("2_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, -9)
+
+[node name="HomeArrival" type="Marker3D" parent="."]
+position = Vector3(-5, 0.6, -9)
+
+[node name="MangroveArrival" type="Marker3D" parent="."]
+position = Vector3(75, 0.6, -9)
+
+[node name="HomeDock" parent="." node_paths=PackedStringArray("destination_water", "arrival_point", "player", "fishing_controller", "camera_rig", "hud") instance=ExtResource("13_dock")]
+position = Vector3(-5, 0.5, -10)
+destination_water = NodePath("../MangroveWater")
+arrival_point = NodePath("../MangroveArrival")
+player = NodePath("../Player")
+fishing_controller = NodePath("../FishingController")
+camera_rig = NodePath("../CameraRig")
+hud = NodePath("../Hud")
+
+[node name="MangroveWater" type="Node3D" parent="."]
+position = Vector3(80, 0, 0)
+script = ExtResource("1_water")
+biome = ExtResource("15_mangrove")
+
+[node name="Spot1" parent="MangroveWater" instance=ExtResource("10_spot")]
+
+[node name="Spot2" parent="MangroveWater" instance=ExtResource("10_spot")]
+
+[node name="MangroveIsland" type="StaticBody3D" parent="."]
+position = Vector3(80, 0, 0)
+
+[node name="Sand" type="MeshInstance3D" parent="MangroveIsland"]
+position = Vector3(0, -0.55, 0)
+mesh = SubResource("sand_mesh")
+material_override = SubResource("mangrove_sand_mat")
+
+[node name="Grass" type="MeshInstance3D" parent="MangroveIsland"]
+position = Vector3(0, 0.4, 0)
+mesh = SubResource("grass_mesh")
+material_override = SubResource("mangrove_grass_mat")
+
+[node name="Collision" type="CollisionShape3D" parent="MangroveIsland"]
+position = Vector3(0, -0.5, 0)
+shape = SubResource("island_shape")
+
+[node name="ShoreBarrier" type="StaticBody3D" parent="MangroveIsland"]
+script = ExtResource("11_shore")
+
+[node name="Tree1" parent="MangroveIsland" instance=ExtResource("3_tree")]
+position = Vector3(-7, 0.5, -3)
+scale = Vector3(1.5, 0.8, 1.5)
+
+[node name="Tree2" parent="MangroveIsland" instance=ExtResource("3_tree")]
+position = Vector3(5, 0.5, -6)
+scale = Vector3(1.7, 0.9, 1.7)
+
+[node name="Tree3" parent="MangroveIsland" instance=ExtResource("3_tree")]
+position = Vector3(7, 0.5, 4)
+scale = Vector3(1.6, 0.8, 1.6)
+
+[node name="Tree4" parent="MangroveIsland" instance=ExtResource("3_tree")]
+position = Vector3(-4, 0.5, 6)
+scale = Vector3(2, 1, 2)
+
+[node name="MangroveDock" parent="." node_paths=PackedStringArray("destination_water", "arrival_point", "player", "fishing_controller", "camera_rig", "hud") instance=ExtResource("13_dock")]
+position = Vector3(75, 0.5, -10)
+destination_water = NodePath("../Lake")
+arrival_point = NodePath("../HomeArrival")
+player = NodePath("../Player")
+fishing_controller = NodePath("../FishingController")
+camera_rig = NodePath("../CameraRig")
+hud = NodePath("../Hud")
 
 [node name="CameraRig" type="Node3D" parent="." node_paths=PackedStringArray("target")]
 script = ExtResource("4_camera")

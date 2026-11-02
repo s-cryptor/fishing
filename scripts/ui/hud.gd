@@ -2,6 +2,7 @@ class_name Hud
 extends CanvasLayer
 
 signal catch_popup_closed
+signal travel_requested
 
 var _action_name := "Пробел"
 
@@ -20,6 +21,10 @@ var _action_name := "Пробел"
 @onready var _catch_popup: CatchPopup = %CatchPopup
 @onready var _collection: CollectionPanel = %CollectionPanel
 @onready var _touch_controls: Control = %TouchControls
+@onready var _biome_label: Label = %BiomeLabel
+@onready var _travel_button: Button = %TravelButton
+@onready var _travel_fade: ColorRect = %TravelFade
+@onready var _travel_label: Label = %TravelLabel
 
 var _toast_tween: Tween
 
@@ -39,6 +44,7 @@ func _ready() -> void:
 		toast("Заказ выполнен: %s, +%d монет" % [order["giver"], int(order["reward"])]))
 	_sell_button.pressed.connect(_on_sell_pressed)
 	_shop_button.pressed.connect(_open_shop)
+	_travel_button.pressed.connect(travel_requested.emit)
 	%CollectionButton.pressed.connect(_toggle_collection)
 	_catch_popup.closed.connect(catch_popup_closed.emit)
 
@@ -46,8 +52,42 @@ func _ready() -> void:
 	_fight_panel.hide()
 	_toast_label.modulate.a = 0.0
 	_shop_button.hide()
+	_travel_button.hide()
+	_travel_fade.hide()
 	_refresh_wallet()
 	_refresh_gear()
+
+
+func set_biome(biome: BiomeData) -> void:
+	_biome_label.text = biome.display_name
+	_biome_label.modulate = biome.accent_color
+
+
+func set_travel_available(destination_name: String) -> void:
+	_travel_button.text = "Плыть: %s" % destination_name
+	_travel_button.show()
+
+
+func clear_travel_available(destination_name: String) -> void:
+	if _travel_button.text == "Плыть: %s" % destination_name:
+		_travel_button.hide()
+
+
+func fade_out(message: String) -> void:
+	_travel_label.text = message
+	_travel_fade.modulate.a = 0.0
+	_travel_fade.show()
+	var tween := create_tween()
+	tween.tween_property(_travel_fade, "modulate:a", 1.0, 0.35)
+	await tween.finished
+
+
+func fade_in() -> void:
+	var tween := create_tween()
+	tween.tween_interval(0.25)
+	tween.tween_property(_travel_fade, "modulate:a", 0.0, 0.35)
+	await tween.finished
+	_travel_fade.hide()
 
 
 func _process(_delta: float) -> void:
@@ -55,6 +95,8 @@ func _process(_delta: float) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _travel_fade.visible:
+		return
 	if event.is_action_pressed(&"toggle_collection"):
 		_toggle_collection()
 	elif event.is_action_pressed(&"interact") and _shop_button.visible:
@@ -62,10 +104,12 @@ func _unhandled_input(event: InputEvent) -> void:
 			_shop.hide()
 		else:
 			_open_shop()
+	elif event.is_action_pressed(&"interact") and _travel_button.visible:
+		travel_requested.emit()
 
 
 func is_modal_open() -> bool:
-	return _collection.visible or _catch_popup.visible or _shop.visible
+	return _collection.visible or _catch_popup.visible or _shop.visible or _travel_fade.visible
 
 
 ## Игрок подошёл к прилавку или отошёл от него.

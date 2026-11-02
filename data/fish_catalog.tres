@@ -8,7 +8,11 @@
 [ext_resource type="Resource" path="res://data/fish/pike.tres" id="5_pike"]
 [ext_resource type="Resource" path="res://data/fish/catfish.tres" id="6_catfish"]
 [ext_resource type="Resource" path="res://data/fish/golden_carp.tres" id="7_golden_carp"]
+[ext_resource type="Resource" path="res://data/fish/tilapia.tres" id="8_tilapia"]
+[ext_resource type="Resource" path="res://data/fish/archerfish.tres" id="9_archerfish"]
+[ext_resource type="Resource" path="res://data/fish/barramundi.tres" id="10_barramundi"]
+[ext_resource type="Resource" path="res://data/fish/sawfish.tres" id="11_sawfish"]
 
 [resource]
 script = ExtResource("1_cat")
-fish = Array[ExtResource("1_fish")]([ExtResource("2_roach"), ExtResource("3_perch"), ExtResource("4_bream"), ExtResource("5_pike"), ExtResource("6_catfish"), ExtResource("7_golden_carp")])
+fish = Array[ExtResource("1_fish")]([ExtResource("2_roach"), ExtResource("3_perch"), ExtResource("4_bream"), ExtResource("5_pike"), ExtResource("6_catfish"), ExtResource("7_golden_carp"), ExtResource("8_tilapia"), ExtResource("9_archerfish"), ExtResource("10_barramundi"), ExtResource("11_sawfish")])

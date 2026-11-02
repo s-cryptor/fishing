@@ -95,8 +95,31 @@ func inventory_value() -> int:
 
 
 func sell_all() -> int:
-	var total := inventory_value()
-	inventory.clear()
+	var indices: Array[int] = []
+	for index in inventory.size():
+		indices.append(index)
+	return sell_selected(indices)
+
+
+## Сначала проверяем весь набор: устаревший или повторный индекс не продаёт часть улова.
+func sell_selected(indices: Array[int]) -> int:
+	if indices.is_empty():
+		return 0
+	var seen: Dictionary = {}
+	var total := 0
+	for index in indices:
+		if index < 0 or index >= inventory.size() or seen.has(index):
+			return 0
+		seen[index] = true
+		var fish := catalog.get_fish(StringName(inventory[index]["fish_id"]))
+		if fish == null:
+			return 0
+		total += fish.value_for(float(inventory[index]["weight_kg"]))
+	var descending := indices.duplicate()
+	descending.sort()
+	descending.reverse()
+	for index in descending:
+		inventory.remove_at(index)
 	money += total
 	if total > 0:
 		sales += 1

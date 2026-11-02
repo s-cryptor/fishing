@@ -13,6 +13,7 @@
 [ext_resource type="Script" path="res://scripts/ui/fish_showcase.gd" id="12_showcase"]
 [ext_resource type="Script" path="res://scripts/ui/landmark_popup.gd" id="13_landmark"]
 [ext_resource type="Script" path="res://scripts/ui/cooking_panel.gd" id="14_kitchen"]
+[ext_resource type="Script" path="res://scripts/ui/basket_panel.gd" id="15_basket"]
 
 [sub_resource type="StyleBoxFlat" id="orders_panel"]
 bg_color = Color(0.94, 0.91, 0.81, 0.96)
@@ -143,7 +144,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 0
 focus_mode = 0
-text = "Продать улов (0)"
+text = "Садок (0)"
 
 [node name="CollectionButton" type="Button" parent="Root/TopBar"]
 unique_name_in_owner = true
@@ -581,6 +582,21 @@ offset_bottom = 280.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("14_kitchen")
+
+[node name="BasketPanel" type="PanelContainer" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = -420.0
+offset_right = 420.0
+offset_top = -315.0
+offset_bottom = 315.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("15_basket")
 
 [node name="ShopPanel" type="PanelContainer" parent="Root"]
 unique_name_in_owner = true

@@ -15,6 +15,13 @@ func _run() -> void:
 	var player: Node3D = scene.get_node("Player")
 	var controller: Node = scene.get_node("FishingController")
 	var hud: Node = scene.get_node("Hud")
+	var state := root.get_node("GameState")
+	state.bait_charges = 3
+	state.bait_enabled = true
+	player.position = Vector3(0, 0.6, 0)
+	controller._start_charge()
+	controller._release_cast()
+	_check(state.bait_charges == 3, "заброс на сушу не тратит приманку")
 	player.position = Vector3(-5, 0.6, -9)
 	await create_timer(0.2).timeout
 	controller.phase = 1 # CHARGING
@@ -27,7 +34,6 @@ func _run() -> void:
 	await create_timer(1.2).timeout
 	_check(controller.water.habitat_id() == &"mangrove" and player.position.x > 70,
 			"лодка перевозит в мангры и переключает водоём")
-	var state := root.get_node("GameState")
 	var session := FishingSession.create(state.catalog, controller.water.habitat_id(), state.gear, 10.0, 42)
 	_check(session != null and &"mangrove" in session.fish.habitats, "после перехода клюёт мангровая рыба")
 	hud.travel_requested.emit()
@@ -49,6 +55,9 @@ func _run() -> void:
 	shop.get_node("VBox/LukaChoices/LukaGearButton").pressed.emit()
 	_check(shop.get_node("VBox/Scroll/ShopList").get_child_count() == state.gear_catalog.rods.size(),
 			"из разговора доступны все удочки")
+	shop.get_node("VBox/LukaChoices/LukaSuppliesButton").pressed.emit()
+	_check(shop.get_node("VBox/Scroll/ShopList").get_child_count() == 2, "у Луки доступны приманка и улучшение лодки")
+	await create_timer(0.5).timeout
 	player.position = Vector3.ZERO
 	await create_timer(0.2).timeout
 	_check(not shop.visible, "разговор закрывается при уходе от прилавка")

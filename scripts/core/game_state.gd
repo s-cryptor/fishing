@@ -10,10 +10,13 @@ signal orders_changed
 signal order_completed(order: Dictionary)
 signal journey_changed
 signal milestone_reached(title: String, reward: int)
+signal supplies_changed
 
 const CATALOG: FishCatalog = preload("res://data/fish_catalog.tres")
 const GEAR_CATALOG: GearCatalog = preload("res://data/gear_catalog.tres")
 const JOURNEY: JourneyData = preload("res://data/journey.tres")
+const BAIT: BaitData = preload("res://data/bait.tres")
+const BOAT: BoatStats = preload("res://data/boats/explorer.tres")
 
 var catalog: FishCatalog = CATALOG
 var gear_catalog: GearCatalog = GEAR_CATALOG
@@ -32,6 +35,9 @@ var orders := OrderBook.new(CATALOG)
 var claimed_goals: Array[String] = []
 var visited_biomes: Array[String] = ["home_lake"]
 var sales := 0
+var bait_charges := 0
+var bait_enabled := false
+var boat_upgraded := false
 ## Подробности последнего улова для карточки результата.
 var last_catch_report: Dictionary = {}
 
@@ -95,6 +101,60 @@ func sell_all() -> int:
 
 func owns_gear(id: StringName) -> bool:
 	return String(id) in owned_gear
+
+
+func buy_bait() -> bool:
+	if money < BAIT.price:
+		return false
+	money -= BAIT.price
+	bait_charges += BAIT.charges
+	bait_enabled = true
+	_supplies_updated(true)
+	return true
+
+
+func upgrade_boat() -> bool:
+	if boat_upgraded or money < BOAT.price:
+		return false
+	money -= BOAT.price
+	boat_upgraded = true
+	_supplies_updated(true)
+	return true
+
+
+func toggle_bait() -> void:
+	if bait_charges <= 0:
+		return
+	bait_enabled = not bait_enabled
+	_supplies_updated()
+
+
+## Бонусы применяем к копии, общий ресурс удочки остаётся неизменным.
+func fishing_gear(habitat: StringName) -> GearStats:
+	var result := gear.duplicate() as GearStats
+	if boat_upgraded and habitat != &"lake":
+		result.luck += BOAT.scouting_luck
+	if bait_enabled and bait_charges > 0:
+		result.luck += BAIT.luck_bonus
+		result.bite_time_mult *= BAIT.bite_time_mult
+	return result
+
+
+## Вызывать только после создания сессии: заброс на сушу приманку не тратит.
+func consume_bait() -> void:
+	if not bait_enabled or bait_charges <= 0:
+		return
+	bait_charges -= 1
+	if bait_charges == 0:
+		bait_enabled = false
+	_supplies_updated()
+
+
+func _supplies_updated(spent_money := false) -> void:
+	_save()
+	if spent_money:
+		money_changed.emit(money)
+	supplies_changed.emit()
 
 
 func buy_gear(rod: GearStats) -> bool:
@@ -183,6 +243,9 @@ func _save() -> void:
 		"claimed_goals": claimed_goals,
 		"visited_biomes": visited_biomes,
 		"sales": sales,
+		"bait_charges": bait_charges,
+		"bait_enabled": bait_enabled,
+		"boat_upgraded": boat_upgraded,
 	})
 
 
@@ -194,6 +257,9 @@ func _load() -> void:
 	claimed_goals.assign(data.get("claimed_goals", []))
 	visited_biomes.assign(data.get("visited_biomes", ["home_lake"]))
 	sales = int(data.get("sales", 0))
+	bait_charges = maxi(0, int(data.get("bait_charges", 0)))
+	bait_enabled = bool(data.get("bait_enabled", false)) and bait_charges > 0
+	boat_upgraded = bool(data.get("boat_upgraded", false))
 	# В сохранениях v1 снастей не было — выдаём стартовую удочку.
 	var starter := String(gear_catalog.rods[0].id)
 	owned_gear.assign(data.get("owned_gear", [starter]))

@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="BoatStats" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/boat_stats.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"explorer"
+display_name = "Лодка исследователя"
+description = "Карта отмелей и новый парус. Постоянно даёт +50% удачи при рыбалке в манграх. Удочка и приманка складываются с бонусом лодки."
+price = 250
+scouting_luck = 0.5

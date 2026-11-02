@@ -9,6 +9,8 @@ extends Node
 ##   --touch-ui          показать тач-контролы на десктопе
 ##   --save=PATH         отдельный файл сохранения (не портить свой)
 ##   --money=N           выдать N монет при старте
+##   --bait=N            выдать N порций приманки и включить её
+##   --boat              показать улучшенную лодку
 ##   --teleport=X,Z      поставить игрока в точку острова
 ##   --action=NAME@SEC   нажать input action через SEC секунд (можно несколько раз)
 ##   --hold=NAME         держать input action всё время (проверка ходьбы)
@@ -31,6 +33,8 @@ var _next_shot := 0.0
 var _shot_index := 0
 var _result_wait := 0.0
 var _money := -1
+var _bait := -1
+var _boat := false
 var _teleport: Variant = null
 ## [[action, time], ...] — ещё не нажатые.
 var _scheduled_actions: Array = []
@@ -50,6 +54,8 @@ func _init() -> void:
 			"--shot-every": _shot_every = value.to_float()
 			"--quit-after": _quit_after = value.to_float()
 			"--money": _money = value.to_int()
+			"--bait": _bait = value.to_int()
+			"--boat": _boat = true
 			"--teleport":
 				var xz := value.split_floats(",")
 				_teleport = Vector2(xz[0], xz[1])
@@ -72,6 +78,13 @@ func _ready() -> void:
 
 
 func _apply_start_overrides() -> void:
+	if _bait >= 0:
+		GameState.bait_charges = _bait
+		GameState.bait_enabled = _bait > 0
+		GameState.supplies_changed.emit()
+	if _boat:
+		GameState.boat_upgraded = true
+		GameState.supplies_changed.emit()
 	if _money >= 0:
 		GameState.money = _money
 		GameState.money_changed.emit(_money)

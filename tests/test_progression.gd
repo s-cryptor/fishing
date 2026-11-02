@@ -42,6 +42,35 @@ func _run() -> void:
 	_check("lake_collection" in state.claimed_goals and state.journey_progress("lake_species") == 6,
 			"полная коллекция озера открывает награду")
 	_check("mangrove_collection" not in state.claimed_goals, "озёрные рыбы не закрывают мангровую коллекцию")
+	state.money = 0
+	state.bait_charges = 0
+	state.bait_enabled = false
+	state.boat_upgraded = false
+	_check(not state.buy_bait() and not state.upgrade_boat(), "без денег нельзя купить приманку и лодку")
+	state.money = 1000
+	_check(state.buy_bait() and state.bait_charges == state.BAIT.charges, "покупка выдаёт пачку приманки")
+	var base: GearStats = state.gear
+	var prepared: GearStats = state.fishing_gear(&"mangrove")
+	_check(prepared.luck > base.luck and prepared.bite_time_mult < base.bite_time_mult,
+			"приманка ускоряет клёв и повышает удачу на копии снасти")
+	state.toggle_bait()
+	state.consume_bait()
+	_check(state.bait_charges == state.BAIT.charges and state.fishing_gear(&"lake").luck == base.luck,
+			"выключенная приманка не расходуется и не даёт бонус")
+	state.toggle_bait()
+	state.consume_bait()
+	_check(state.bait_charges == state.BAIT.charges - 1, "заброс расходует одну порцию")
+	_check(state.upgrade_boat() and not state.upgrade_boat(), "лодку можно улучшить только один раз")
+	var lake_gear: GearStats = state.fishing_gear(&"lake")
+	var mangrove_gear: GearStats = state.fishing_gear(&"mangrove")
+	_check(is_equal_approx(mangrove_gear.luck - lake_gear.luck, state.BOAT.scouting_luck),
+			"лодка даёт бонус только в экспедиции")
+	state._load()
+	_check(state.boat_upgraded and state.bait_charges == state.BAIT.charges - 1,
+			"лодка и остаток приманки переживают загрузку")
+	for i in 20:
+		state.consume_bait()
+	_check(state.bait_charges == 0 and not state.bait_enabled, "последняя порция выключает приманку без отрицательного остатка")
 	quit(1 if _failures else 0)
 
 

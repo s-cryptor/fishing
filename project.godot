@@ -55,7 +55,7 @@ interact={
 }
 toggle_collection={
 "deadzone": 0.2,
-"events": [Object(InputEventKey,"device":-1,"physical_keycode":67)]
+"events": [Object(InputEventKey,"device":-1,"physical_keycode":67), Object(InputEventJoypadButton,"device":-1,"button_index":4)]
 }
 sail_action={
 "deadzone": 0.2,

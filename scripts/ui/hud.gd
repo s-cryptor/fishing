@@ -46,6 +46,8 @@ var _travel_destination := ""
 
 func _ready() -> void:
 	add_to_group(&"game_hud")
+	for panel in [_collection, _shop, _catch_popup, _landmark_popup, _kitchen]:
+		panel.visibility_changed.connect(_fence_fishing_input)
 	var touch := DisplayServer.is_touchscreen_available() or DebugTools.touch_ui
 	_touch_available = touch
 	_touch_controls.visible = touch
@@ -127,6 +129,12 @@ func _ready() -> void:
 	_refresh_bait()
 	if not GameState.save_recovery_notice.is_empty():
 		toast(GameState.save_recovery_notice)
+
+
+func _fence_fishing_input() -> void:
+	var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
+	if controller:
+		controller.require_action_release()
 
 
 func _refresh_bait() -> void:

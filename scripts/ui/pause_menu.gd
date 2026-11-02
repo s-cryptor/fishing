@@ -45,7 +45,7 @@ func _ready() -> void:
 	vibration.toggled.connect(PlayerSettings.set_vibration)
 	box.add_child(vibration)
 	var help := Label.new()
-	help.text = "Удерживай и отпускай — заброс.\nКлюнуло — нажми сразу.\nДержи — подматывать, отпускай на рывках.\n\nWASD / стик — ходьба · E / X — разговор и лодка\nC — коллекция · Esc / Start — пауза\n\nПрогресс сохраняется после улова и покупок."
+	help.text = "Удерживай и отпускай — заброс. Мышь / стик — прицел.\nКлюнуло — нажми сразу. На рывке отпускай.\nДержи натяжение в золотой зоне для быстрой подмотки.\n\nWASD / стик — ходьба · E / X — разговор\nB / Y у причала — лодка · C / Back — коллекция\nTab / стрелки / крестовина — меню · Enter / A — выбор\nEsc / Start — пауза\n\nМарта готовит бонусы из обычного улова.\nПрогресс сохраняется после улова и покупок."
 	help.add_theme_font_size_override("font_size", 18)
 	box.add_child(help)
 	_overlay.hide()
@@ -84,6 +84,9 @@ func toggle() -> void:
 		_resume.release_focus()
 		# Кнопка действия не должна остаться зажатой после переключения окна.
 		Input.action_release(&"fish_action")
+		var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
+		if controller:
+			controller.require_action_release()
 
 
 func _notification(what: int) -> void:

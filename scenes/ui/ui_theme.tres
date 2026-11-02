@@ -55,6 +55,22 @@ content_margin_top = 8.0
 content_margin_right = 18.0
 content_margin_bottom = 8.0
 
+[sub_resource type="StyleBoxFlat" id="button_focus"]
+draw_center = false
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.98, 0.73, 0.27, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+expand_margin_left = 3.0
+expand_margin_top = 3.0
+expand_margin_right = 3.0
+expand_margin_bottom = 3.0
+
 [sub_resource type="StyleBoxFlat" id="bar_bg"]
 bg_color = Color(0, 0, 0, 0.55)
 corner_radius_top_left = 6
@@ -74,11 +90,13 @@ default_font_size = 20
 Button/colors/font_color = Color(0.13, 0.28, 0.25, 1)
 Button/colors/font_hover_color = Color(0.13, 0.28, 0.25, 1)
 Button/colors/font_pressed_color = Color(0.13, 0.28, 0.25, 1)
+Button/colors/font_focus_color = Color(0.13, 0.28, 0.25, 1)
 Button/colors/font_disabled_color = Color(0.29, 0.4, 0.35, 0.8)
 Button/styles/normal = SubResource("button")
 Button/styles/hover = SubResource("button_hover")
 Button/styles/pressed = SubResource("button_hover")
 Button/styles/disabled = SubResource("button_disabled")
+Button/styles/focus = SubResource("button_focus")
 Label/colors/font_color = Color(0.94, 0.92, 0.84, 1)
 Label/colors/font_outline_color = Color(0.03, 0.12, 0.12, 0.75)
 Label/constants/outline_size = 0

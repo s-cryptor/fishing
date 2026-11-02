@@ -100,6 +100,10 @@ func _run() -> void:
 	await _capture("kitchen_active")
 	hud.get_node("Root/CookingPanel").hide()
 	await _capture("meal_hud")
+	var pause: Node = get_first_node_in_group(&"pause_menu")
+	pause.toggle()
+	await _capture("pause_navigation")
+	pause.toggle()
 	scene.queue_free()
 	await process_frame
 	print("Визуальная проверка завершена: %s" % _directory)

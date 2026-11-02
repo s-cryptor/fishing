@@ -12,6 +12,7 @@ var _show_supplies := false
 
 func _ready() -> void:
 	hide()
+	ModalFocus.watch(self, &"BuyButton")
 	%ShopCloseButton.pressed.connect(hide)
 	GameState.money_changed.connect(func(_m: int) -> void: _refresh_if_visible())
 	GameState.gear_changed.connect(_refresh_if_visible)
@@ -44,6 +45,7 @@ func _refresh_if_visible() -> void:
 
 
 func _rebuild() -> void:
+	ModalFocus.restore.call_deferred(self, &"BuyButton")
 	_money_label.text = "Монеты: %d" % GameState.money
 	for child in _list.get_children():
 		_list.remove_child(child)
@@ -76,6 +78,7 @@ func _make_offer(title: String, description: String, action: String, disabled: b
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		box.add_child(label)
 	var button := Button.new()
+	button.name = "BuyButton"
 	button.text = action
 	button.disabled = disabled
 	button.focus_mode = Control.FOCUS_NONE
@@ -121,6 +124,7 @@ func _make_row(rod: GearStats) -> Control:
 		info.add_child(label)
 
 	var button := Button.new()
+	button.name = "BuyButton"
 	button.focus_mode = Control.FOCUS_NONE
 	button.custom_minimum_size = Vector2(170, 0)
 	button.size_flags_vertical = Control.SIZE_SHRINK_CENTER

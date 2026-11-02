@@ -15,6 +15,7 @@ var _habitat: StringName = &"lake"
 
 func _ready() -> void:
 	hide()
+	ModalFocus.watch(self)
 	%CloseButton.pressed.connect(hide)
 	var tabs := HBoxContainer.new()
 	$VBox.add_child(tabs)
@@ -48,6 +49,7 @@ func toggle() -> void:
 
 
 func _rebuild() -> void:
+	ModalFocus.restore.call_deferred(self)
 	_grid.columns = 4
 	for child in _grid.get_children():
 		_grid.remove_child(child)

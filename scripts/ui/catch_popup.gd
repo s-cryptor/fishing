@@ -15,6 +15,7 @@ var _open_tween: Tween
 
 func _ready() -> void:
 	hide()
+	ModalFocus.watch(self, &"TakeButton")
 	%TakeButton.pressed.connect(close)
 
 

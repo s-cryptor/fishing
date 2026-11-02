@@ -41,6 +41,8 @@ func _ready() -> void:
 	GameState.inventory_changed.connect(_refresh_wallet)
 	GameState.gear_changed.connect(_refresh_gear)
 	GameState.journey_changed.connect(_refresh_journey)
+	GameState.supplies_changed.connect(_refresh_bait)
+	%BaitButton.pressed.connect(GameState.toggle_bait)
 	GameState.milestone_reached.connect(func(title: String, reward: int) -> void:
 		toast("%s! +%d монет" % [title, reward]))
 	GameState.order_completed.connect(func(order: Dictionary) -> void:
@@ -60,6 +62,12 @@ func _ready() -> void:
 	_refresh_wallet()
 	_refresh_gear()
 	_refresh_journey()
+	_refresh_bait()
+
+
+func _refresh_bait() -> void:
+	%BaitButton.visible = GameState.bait_charges > 0
+	%BaitButton.text = "Приманка: %s (%d)" % ["ВКЛ" if GameState.bait_enabled else "ВЫКЛ", GameState.bait_charges]
 
 
 func _refresh_journey() -> void:

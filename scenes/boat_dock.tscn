@@ -1,6 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/world/boat_dock.gd" id="1_dock"]
+[ext_resource type="Script" path="res://scripts/world/boat_visual.gd" id="2_visual"]
 
 [sub_resource type="SphereShape3D" id="trigger"]
 radius = 3.0
@@ -37,17 +38,18 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.25, -1.4)
 mesh = SubResource("dock_mesh")
 
 [node name="Boat" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -0.15, -2.4)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, -0.15, -4.8)
+script = ExtResource("2_visual")
 
 [node name="Hull" type="MeshInstance3D" parent="Boat"]
 mesh = SubResource("hull_mesh")
 
 [node name="Seat1" type="MeshInstance3D" parent="Boat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, -0.8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, -0.8)
 mesh = SubResource("seat_mesh")
 
 [node name="Seat2" type="MeshInstance3D" parent="Boat"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0.8)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 0.8)
 mesh = SubResource("seat_mesh")
 
 [node name="Sign" type="Label3D" parent="."]

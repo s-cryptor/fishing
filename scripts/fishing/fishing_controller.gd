@@ -66,7 +66,7 @@ func _start_charge() -> void:
 
 func _release_cast() -> void:
 	hud.hide_charge()
-	var gear := GameState.gear
+	var gear := GameState.fishing_gear(water.habitat_id())
 	_cast_dir = player.facing_direction()
 	_origin = Vector3(player.global_position.x, water.water_level, player.global_position.z)
 	var distance := lerpf(gear.min_cast_m, gear.max_cast_m, cast_power())
@@ -85,6 +85,7 @@ func _release_cast() -> void:
 		hud.toast("Здесь не водится рыба")
 		_to_idle()
 		return
+	GameState.consume_bait()
 	session.state_changed.connect(_on_session_state_changed)
 	session.thrash_started.connect(bobber.splash)
 	session.thrash_started.connect(Sfx.play.bind(&"thrash", -4.0))

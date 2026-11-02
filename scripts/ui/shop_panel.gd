@@ -7,6 +7,7 @@ extends PanelContainer
 @onready var _greeting: Label = %LukaGreeting
 
 var _show_orders := false
+var _show_supplies := false
 
 
 func _ready() -> void:
@@ -15,17 +16,24 @@ func _ready() -> void:
 	GameState.money_changed.connect(func(_m: int) -> void: _refresh_if_visible())
 	GameState.gear_changed.connect(_refresh_if_visible)
 	GameState.orders_changed.connect(_refresh_if_visible)
+	GameState.supplies_changed.connect(_refresh_if_visible)
 	%LukaGearButton.pressed.connect(_set_orders.bind(false))
 	%LukaOrdersButton.pressed.connect(_set_orders.bind(true))
+	%LukaSuppliesButton.pressed.connect(func() -> void:
+		_show_supplies = true
+		_show_orders = false
+		_rebuild())
 
 
 func open() -> void:
 	_show_orders = false
+	_show_supplies = false
 	_rebuild()
 	show()
 
 
 func _set_orders(value: bool) -> void:
+	_show_supplies = false
 	_show_orders = value
 	_rebuild()
 
@@ -41,14 +49,39 @@ func _rebuild() -> void:
 		_list.remove_child(child)
 		child.queue_free()
 	_greeting.text = "Лука: Соседи оставили заказы. Награду получишь сразу после поимки — рыба останется у тебя." if _show_orders else "Лука: Рад тебя видеть! Подберём удочку? За сильной рыбой лучше идти с хорошей снастью."
-	%LukaGearButton.disabled = not _show_orders
+	%LukaGearButton.disabled = not _show_orders and not _show_supplies
 	%LukaOrdersButton.disabled = _show_orders
+	%LukaSuppliesButton.disabled = _show_supplies
+	if _show_supplies:
+		_greeting.text = "Лука: Для редкой рыбы возьми смесь. А карта отмелей поможет искать удачные места в манграх."
+		_list.add_child(_make_offer(GameState.BAIT.display_name, GameState.BAIT.description,
+				"Купить: %d" % GameState.BAIT.price, GameState.money < GameState.BAIT.price, GameState.buy_bait))
+		_list.add_child(_make_offer(GameState.BOAT.display_name, GameState.BOAT.description,
+				"Улучшено" if GameState.boat_upgraded else "Улучшить: %d" % GameState.BOAT.price,
+				GameState.boat_upgraded or GameState.money < GameState.BOAT.price, GameState.upgrade_boat))
+		return
 	if _show_orders:
 		for order in GameState.orders.orders:
 			_list.add_child(_make_order(order))
 		return
 	for rod in GameState.gear_catalog.rods:
 		_list.add_child(_make_row(rod))
+
+
+func _make_offer(title: String, description: String, action: String, disabled: bool, callback: Callable) -> Control:
+	var box := VBoxContainer.new()
+	for text in [title, description]:
+		var label := Label.new()
+		label.text = text
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		box.add_child(label)
+	var button := Button.new()
+	button.text = action
+	button.disabled = disabled
+	button.focus_mode = Control.FOCUS_NONE
+	button.pressed.connect(callback)
+	box.add_child(button)
+	return box
 
 
 func _make_order(order: Dictionary) -> Control:

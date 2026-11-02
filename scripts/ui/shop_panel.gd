@@ -92,8 +92,9 @@ func _make_order(order: Dictionary) -> Control:
 	box.add_child(title)
 	var fish := GameState.catalog.get_fish(StringName(order["fish_id"]))
 	var info := Label.new()
+	var biome := GameState.BIOMES.for_habitat(fish.habitats[0])
 	info.text = "Награда: %d монет · %s\nКлюёт: %s" % [int(order["reward"]),
-			"Родное озеро" if &"lake" in fish.habitats else "Мангровые отмели", DayTime.describe(fish.active_times)]
+			biome.display_name if biome else "Неизвестный биом", DayTime.describe(fish.active_times)]
 	info.add_theme_font_size_override("font_size", 18)
 	info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	box.add_child(info)

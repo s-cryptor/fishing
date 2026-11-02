@@ -13,6 +13,7 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -38,17 +39,9 @@ jobs:
           unzip -q /tmp/templates.tpz 'templates/web_*' 'templates/version.txt' -d /tmp
           mv /tmp/templates ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
 
-      - name: Импорт ресурсов
-        run: ~/godot/godot --headless --path . --import
-
-      - name: Тесты
-        run: ~/godot/godot --headless --path . -s res://tests/test_fishing_session.gd
-
-      - name: Проверка переходов на лодке
-        run: ~/godot/godot --headless --path . -s res://tests/test_boat_travel.gd -- --save=user://boat-test.json --mute
-
-      - name: Проверка прогрессии
-        run: ~/godot/godot --headless --path . -s res://tests/test_progression.gd -- --save=user://progression-test.json --mute
+      - name: Импорт и проверки игры
+        timeout-minutes: 3
+        run: bash tests/run_checks.sh ~/godot/godot
 
       - name: Экспорт в веб
         run: |

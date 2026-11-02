@@ -41,6 +41,15 @@ func _mangrove(point: Vector3) -> void:
 	trunk.height = 2.8
 	trunk.radial_segments = 7
 	_mesh(self, trunk, point + Vector3.UP * 1.4, Color("#795b42"))
+	var body := StaticBody3D.new()
+	body.position = point + Vector3.UP * 1.4
+	var shape := CollisionShape3D.new()
+	var cylinder := CylinderShape3D.new()
+	cylinder.radius = 0.38
+	cylinder.height = 2.8
+	shape.shape = cylinder
+	body.add_child(shape)
+	add_child(body)
 	for i in 5:
 		var angle := TAU * i / 5.0
 		var outward := Vector3(cos(angle), 0, sin(angle))

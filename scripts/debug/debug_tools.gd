@@ -11,6 +11,7 @@ extends Node
 ##   --money=N           выдать N монет при старте
 ##   --bait=N            выдать N порций приманки и включить её
 ##   --boat              показать улучшенную лодку
+##   --biome=ID          начать в habitat: lake, mangrove, fjord
 ##   --teleport=X,Z      поставить игрока в точку острова
 ##   --action=NAME@SEC   нажать input action через SEC секунд (можно несколько раз)
 ##   --hold=NAME         держать input action всё время (проверка ходьбы)
@@ -36,6 +37,7 @@ var _result_wait := 0.0
 var _money := -1
 var _bait := -1
 var _boat := false
+var _start_biome := ""
 var _teleport: Variant = null
 ## [[action, time], ...] — ещё не нажатые.
 var _scheduled_actions: Array = []
@@ -57,6 +59,7 @@ func _init() -> void:
 			"--money": _money = value.to_int()
 			"--bait": _bait = value.to_int()
 			"--boat": _boat = true
+			"--biome": _start_biome = value
 			"--teleport":
 				var xz := value.split_floats(",")
 				_teleport = Vector2(xz[0], xz[1])
@@ -81,6 +84,16 @@ func _ready() -> void:
 
 
 func _apply_start_overrides() -> void:
+	if not _start_biome.is_empty():
+		var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
+		if controller:
+			for child in controller.get_parent().get_children():
+				var water := child as FishingWater
+				if water and water.habitat_id() == StringName(_start_biome):
+					controller.water = water
+					controller.player.global_position = water.global_position + Vector3(0, 0.6, -9)
+					controller.camera_rig.snap_to_target()
+					controller.hud.set_biome(water.biome)
 	if _bait >= 0:
 		GameState.bait_charges = _bait
 		GameState.bait_enabled = _bait > 0

@@ -21,7 +21,7 @@ func _draw() -> void:
 	draw_style_box(_background(), Rect2(Vector2.ZERO, size))
 	var center := size * Vector2(0.48, 0.52) + Vector2(0, sin(_time * 1.8) * 2.0)
 	var length := minf(size.x * 0.55, size.y * 1.8)
-	var slender := fish.id in [&"pike", &"barramundi", &"sawfish", &"catfish"]
+	var slender := fish.id in [&"pike", &"barramundi", &"sawfish", &"catfish", &"atlantic_salmon", &"arctic_char"]
 	var height := length * (0.28 if slender else 0.43)
 	var base := fish.color if discovered else Color("#243c50")
 	var points := PackedVector2Array()

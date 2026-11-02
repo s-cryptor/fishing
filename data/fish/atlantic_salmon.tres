@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="FishData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/fish_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"atlantic_salmon"
+display_name = "Атлантический лосось"
+description = "Серебряная стрела холодных вод. Не мотай, когда он рвётся в глубину."
+rarity = 2
+color = Color(0.61, 0.76, 0.84, 1)
+min_weight_kg = 2.0
+max_weight_kg = 12.0
+price_per_kg = 48.0
+strength = 0.66
+thrash_rate = 0.55
+stamina = 10.0
+spawn_weight = 18.0
+habitats = Array[StringName]([&"fjord"])
+active_times = 7

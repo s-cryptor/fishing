@@ -50,6 +50,30 @@ func _run() -> void:
 	await create_timer(1.2).timeout
 	_check(controller.water.habitat_id() == &"lake" and player.position.x < 0 and player.can_move,
 			"обратный путь возвращает домой и разблокирует ходьбу")
+	state.boat_upgraded = false
+	controller.water = scene.get_node("MangroveWater")
+	player.position = Vector3(89, 0.6, 0)
+	await create_timer(0.2).timeout
+	hud.travel_requested.emit()
+	await create_timer(0.1).timeout
+	_check(controller.water.habitat_id() == &"mangrove" and player.position.x < 100,
+			"фьорд закрыт до улучшения лодки")
+	state.money = 1000
+	state.upgrade_boat()
+	hud.travel_requested.emit()
+	await create_timer(1.2).timeout
+	_check(controller.water.habitat_id() == &"fjord" and player.position.x > 140,
+			"улучшенная лодка открывает фьорд")
+	var fjord_session := FishingSession.create(state.catalog, controller.water.habitat_id(), state.gear, 10.0, 7)
+	_check(fjord_session != null and &"fjord" in fjord_session.fish.habitats, "во фьорде клюёт северная рыба")
+	hud.travel_requested.emit()
+	await create_timer(1.2).timeout
+	_check(controller.water.habitat_id() == &"mangrove", "из фьорда можно вернуться в мангры")
+	player.position = Vector3(75, 0.6, -9)
+	await create_timer(0.2).timeout
+	hud.travel_requested.emit()
+	await create_timer(1.2).timeout
+	_check(controller.water.habitat_id() == &"lake", "полный маршрут возвращает на родной остров")
 	player.position = Vector3(4.5, 0.6, -4)
 	await create_timer(0.2).timeout
 	var event := InputEventAction.new()
@@ -71,6 +95,16 @@ func _run() -> void:
 	player.position = Vector3.ZERO
 	await create_timer(0.2).timeout
 	_check(not shop.visible, "разговор закрывается при уходе от прилавка")
+	hud._toggle_collection()
+	var collection_panel := hud.get_node("Root/CollectionPanel")
+	var tabs := collection_panel.get_node("VBox").get_child(1)
+	tabs.get_child(2).pressed.emit()
+	_check(collection_panel.get_node("VBox/Scroll/CollectionGrid").get_child_count() == 3,
+			"каталог биомов создаёт вкладку с тремя рыбами фьорда")
+	tabs.get_child(3).pressed.emit()
+	_check(collection_panel.get_node("VBox/Scroll/CollectionGrid").get_child_count() == state.JOURNEY.goals.size(),
+			"журнал показывает все цели пути рыболова")
+	hud._toggle_collection()
 	scene.queue_free()
 	await process_frame
 	quit(1 if _failures else 0)

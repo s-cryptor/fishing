@@ -9,6 +9,7 @@ extends Area3D
 @export var fishing_controller: FishingController
 @export var camera_rig: CameraRig
 @export var hud: Hud
+@export var requires_explorer := false
 
 var _nearby := false
 var _travelling := false
@@ -18,6 +19,8 @@ func _ready() -> void:
 	body_entered.connect(_on_body_changed.bind(true))
 	body_exited.connect(_on_body_changed.bind(false))
 	hud.travel_requested.connect(_travel)
+	GameState.supplies_changed.connect(_refresh_availability)
+	_refresh_availability()
 
 
 func _on_body_changed(body: Node3D, nearby: bool) -> void:
@@ -25,13 +28,25 @@ func _on_body_changed(body: Node3D, nearby: bool) -> void:
 		return
 	_nearby = nearby
 	if nearby:
-		hud.set_travel_available(destination_water.biome.display_name)
+		_refresh_availability()
 	else:
 		hud.clear_travel_available(destination_water.biome.display_name)
 
 
+func _refresh_availability() -> void:
+	$Sign.text = destination_water.biome.display_name
+	if requires_explorer and not GameState.boat_upgraded:
+		$Sign.text += "\nНужна лодка исследователя"
+	$Sign.font_size = 42
+	if _nearby:
+		hud.set_travel_available(destination_water.biome.display_name, requires_explorer and not GameState.boat_upgraded)
+
+
 func _travel() -> void:
 	if not _nearby or _travelling or hud.is_modal_open() or fishing_controller.phase != FishingController.Phase.IDLE:
+		return
+	if requires_explorer and not GameState.boat_upgraded:
+		hud.toast("Улучши лодку у Луки: %d монет" % GameState.BOAT.price)
 		return
 	_travelling = true
 	player.can_move = false

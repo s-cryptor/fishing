@@ -29,13 +29,14 @@ func _initialize() -> void:
 
 
 func test_catalog_loaded() -> void:
-	_check(CATALOG.fish.size() == 10, "в каталоге 10 видов")
+	_check(CATALOG.fish.size() == 13, "в каталоге 13 видов")
 	_check(CATALOG.for_habitat(&"lake").size() == 6, "все виды водятся в озере")
 	_check(CATALOG.for_habitat(&"mangrove").size() == 4, "в манграх 4 новых вида")
+	_check(CATALOG.for_habitat(&"fjord").size() == 3, "во фьорде 3 вида")
 
 
 func test_biomes_have_fish() -> void:
-	for habitat in [&"lake", &"mangrove"]:
+	for habitat in [&"lake", &"mangrove", &"fjord"]:
 		for phase in DayTime.Phase.values():
 			_check(not CATALOG.biting(habitat, phase).is_empty(),
 					"%s: есть клёв в фазе %s" % [habitat, DayTime.PHASE_NAMES[phase]])
@@ -86,6 +87,15 @@ func test_orders() -> void:
 		var fish := CATALOG.get_fish(StringName(order["fish_id"]))
 		feasible = feasible and order["min_kg"] < fish.max_weight_kg and order["reward"] > 0
 	_check(feasible, "требуемый вес всегда достижим")
+	var locked_orders := false
+	for i in 500:
+		locked_orders = locked_orders or &"fjord" in CATALOG.get_fish(StringName(book.generate(i)["fish_id"])).habitats
+	_check(not locked_orders, "до улучшения лодки заказы не требуют рыбу фьорда")
+	book.available_habitats.append(&"fjord")
+	var northern_orders := false
+	for i in 500:
+		northern_orders = northern_orders or &"fjord" in CATALOG.get_fish(StringName(book.generate(i)["fish_id"])).habitats
+	_check(northern_orders, "после открытия фьорда появляются северные заказы")
 
 	var order: Dictionary = book.orders[0]
 	var fish := CATALOG.get_fish(StringName(order["fish_id"]))

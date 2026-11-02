@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="FishData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/fish_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"greenland_halibut"
+display_name = "Чёрный палтус"
+description = "Молчаливый великан фьорда. Поднимается с глубины в сумерках."
+rarity = 3
+color = Color(0.32, 0.39, 0.49, 1)
+min_weight_kg = 5.0
+max_weight_kg = 30.0
+price_per_kg = 40.0
+strength = 0.78
+thrash_rate = 0.4
+stamina = 14.0
+spawn_weight = 4.0
+habitats = Array[StringName]([&"fjord"])
+active_times = 13

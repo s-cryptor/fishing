@@ -18,6 +18,8 @@
 [ext_resource type="Shader" path="res://shaders/water.gdshader" id="16_water_shader"]
 [ext_resource type="Script" path="res://scripts/world/island_details.gd" id="17_details"]
 [ext_resource type="Script" path="res://scripts/ui/pause_menu.gd" id="18_pause"]
+[ext_resource type="Resource" path="res://data/biomes/ice_fjord.tres" id="19_fjord"]
+[ext_resource type="Script" path="res://scripts/world/fjord_details.gd" id="20_fjord_details"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
 sky_top_color = Color(0.32, 0.58, 0.88, 1)
@@ -40,7 +42,7 @@ shader = ExtResource("16_water_shader")
 
 [sub_resource type="PlaneMesh" id="water_mesh"]
 material = SubResource("water_mat")
-size = Vector2(300, 300)
+size = Vector2(600, 600)
 
 [sub_resource type="StandardMaterial3D" id="sand_mat"]
 albedo_color = Color(0.93, 0.83, 0.6, 1)
@@ -71,6 +73,12 @@ albedo_color = Color(0.25, 0.49, 0.32, 1)
 
 [sub_resource type="StandardMaterial3D" id="mangrove_sand_mat"]
 albedo_color = Color(0.7, 0.65, 0.4, 1)
+
+[sub_resource type="StandardMaterial3D" id="snow_mat"]
+albedo_color = Color(0.55, 0.65, 0.7, 1)
+
+[sub_resource type="StandardMaterial3D" id="fjord_rock_mat"]
+albedo_color = Color(0.4, 0.54, 0.62, 1)
 
 [sub_resource type="StandardMaterial3D" id="wall_mat"]
 albedo_color = Color(0.96, 0.92, 0.82, 1)
@@ -270,6 +278,65 @@ hud = NodePath("../Hud")
 [node name="CameraRig" type="Node3D" parent="." node_paths=PackedStringArray("target")]
 script = ExtResource("4_camera")
 target = NodePath("../Player")
+
+[node name="FjordWater" type="Node3D" parent="."]
+position = Vector3(160, 0, 0)
+script = ExtResource("1_water")
+biome = ExtResource("19_fjord")
+
+[node name="Spot1" parent="FjordWater" instance=ExtResource("10_spot")]
+
+[node name="Spot2" parent="FjordWater" instance=ExtResource("10_spot")]
+
+[node name="FjordIsland" type="StaticBody3D" parent="."]
+position = Vector3(160, 0, 0)
+
+[node name="Rock" type="MeshInstance3D" parent="FjordIsland"]
+position = Vector3(0, -0.55, 0)
+mesh = SubResource("sand_mesh")
+material_override = SubResource("fjord_rock_mat")
+
+[node name="Snow" type="MeshInstance3D" parent="FjordIsland"]
+position = Vector3(0, 0.4, 0)
+mesh = SubResource("grass_mesh")
+material_override = SubResource("snow_mat")
+
+[node name="Collision" type="CollisionShape3D" parent="FjordIsland"]
+position = Vector3(0, -0.5, 0)
+shape = SubResource("island_shape")
+
+[node name="ShoreBarrier" type="StaticBody3D" parent="FjordIsland"]
+script = ExtResource("11_shore")
+
+[node name="Details" type="Node3D" parent="FjordIsland"]
+script = ExtResource("20_fjord_details")
+
+[node name="MangroveEastArrival" type="Marker3D" parent="."]
+position = Vector3(89, 0.6, 0)
+
+[node name="FjordArrival" type="Marker3D" parent="."]
+position = Vector3(151, 0.6, 0)
+
+[node name="NorthboundDock" parent="." node_paths=PackedStringArray("destination_water", "arrival_point", "player", "fishing_controller", "camera_rig", "hud") instance=ExtResource("13_dock")]
+position = Vector3(90, 0.5, 0)
+rotation = Vector3(0, -1.5707963, 0)
+destination_water = NodePath("../FjordWater")
+arrival_point = NodePath("../FjordArrival")
+player = NodePath("../Player")
+fishing_controller = NodePath("../FishingController")
+camera_rig = NodePath("../CameraRig")
+hud = NodePath("../Hud")
+requires_explorer = true
+
+[node name="FjordDock" parent="." node_paths=PackedStringArray("destination_water", "arrival_point", "player", "fishing_controller", "camera_rig", "hud") instance=ExtResource("13_dock")]
+position = Vector3(150, 0.5, 0)
+rotation = Vector3(0, 1.5707963, 0)
+destination_water = NodePath("../MangroveWater")
+arrival_point = NodePath("../MangroveEastArrival")
+player = NodePath("../Player")
+fishing_controller = NodePath("../FishingController")
+camera_rig = NodePath("../CameraRig")
+hud = NodePath("../Hud")
 
 [node name="Camera3D" type="Camera3D" parent="CameraRig"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 12, 15)

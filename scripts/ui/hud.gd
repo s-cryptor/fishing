@@ -74,6 +74,8 @@ func _ready() -> void:
 	GameState.gear_changed.connect(_refresh_gear)
 	GameState.journey_changed.connect(_refresh_journey)
 	GameState.supplies_changed.connect(_refresh_bait)
+	GameState.save_failed.connect(func(message: String) -> void:
+		toast(message))
 	%BaitButton.pressed.connect(GameState.toggle_bait)
 	GameState.milestone_reached.connect(func(title: String, reward: int) -> void:
 		toast("%s! +%d монет" % [title, reward]))
@@ -113,6 +115,8 @@ func _ready() -> void:
 	_refresh_gear()
 	_refresh_journey()
 	_refresh_bait()
+	if not GameState.save_recovery_notice.is_empty():
+		toast(GameState.save_recovery_notice)
 
 
 func _refresh_bait() -> void:

@@ -11,6 +11,7 @@ signal order_completed(order: Dictionary)
 signal journey_changed
 signal milestone_reached(title: String, reward: int)
 signal supplies_changed
+signal save_failed(message: String)
 
 const CATALOG: FishCatalog = preload("res://data/fish_catalog.tres")
 const GEAR_CATALOG: GearCatalog = preload("res://data/gear_catalog.tres")
@@ -43,6 +44,7 @@ var bait_enabled := false
 var boat_upgraded := false
 ## Подробности последнего улова для карточки результата.
 var last_catch_report: Dictionary = {}
+var save_recovery_notice := ""
 
 var _store := SaveStore.new(DebugTools.save_path if DebugTools.save_path else "user://save.json")
 
@@ -253,7 +255,7 @@ func equip_gear(rod: GearStats) -> void:
 
 
 func _save() -> void:
-	_store.save_data({
+	var saved := _store.save_data({
 		"money": money,
 		"inventory": inventory,
 		"collection": collection,
@@ -268,10 +270,13 @@ func _save() -> void:
 		"bait_enabled": bait_enabled,
 		"boat_upgraded": boat_upgraded,
 	})
+	if not saved:
+		save_failed.emit(_store.last_error)
 
 
 func _load() -> void:
 	var data := _store.load_data()
+	save_recovery_notice = "Сохранение восстановлено после сбоя" if not _store.recovered_from.is_empty() else _store.last_error
 	money = int(data.get("money", 0))
 	inventory.assign(data.get("inventory", []))
 	collection = data.get("collection", {})

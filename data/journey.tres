@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="JourneyData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/journey_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+goals = Array[Dictionary]([{
+"id": "first_catch", "title": "Первый улов", "hint": "Повернись к воде, удерживай и отпусти кнопку рыбалки.", "metric": "catches", "target": 1, "reward": 25
+}, {
+"id": "first_sale", "title": "На новую снасть", "hint": "Продай улов кнопкой вверху экрана.", "metric": "sales", "target": 1, "reward": 25
+}, {
+"id": "three_species", "title": "Любопытный рыболов", "hint": "Поймай 3 разных вида. Время суток влияет на клёв.", "metric": "species", "target": 3, "reward": 60
+}, {
+"id": "new_rod", "title": "Хороший инструмент", "hint": "Купи вторую удочку у Луки на острове.", "metric": "rods", "target": 2, "reward": 40
+}, {
+"id": "mangrove_visit", "title": "За горизонт", "hint": "Сядь в лодку у причала слева от дома.", "metric": "mangrove_visit", "target": 1, "reward": 50
+}, {
+"id": "ten_catches", "title": "Ещё один заброс", "hint": "Поймай 10 рыб. Рыбные места с пузырями ускоряют клёв.", "metric": "catches", "target": 10, "reward": 80
+}, {
+"id": "lake_collection", "title": "Знаток озера", "hint": "Открой все 6 озёрных видов. Ищи карпа на рассвете и закате.", "metric": "lake_species", "target": 6, "reward": 350
+}, {
+"id": "mangrove_collection", "title": "Секреты мангров", "hint": "Открой все 4 вида мангровых отмелей.", "metric": "mangrove_species", "target": 4, "reward": 300
+}, {
+"id": "golden_trophy", "title": "Золотой трофей", "hint": "Поймай рыбу весом не меньше 85% диапазона её вида.", "metric": "trophies", "target": 1, "reward": 100
+}])

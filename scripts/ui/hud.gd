@@ -40,6 +40,9 @@ func _ready() -> void:
 		_refresh_wallet())
 	GameState.inventory_changed.connect(_refresh_wallet)
 	GameState.gear_changed.connect(_refresh_gear)
+	GameState.journey_changed.connect(_refresh_journey)
+	GameState.milestone_reached.connect(func(title: String, reward: int) -> void:
+		toast("%s! +%d монет" % [title, reward]))
 	GameState.order_completed.connect(func(order: Dictionary) -> void:
 		toast("Заказ выполнен: %s, +%d монет" % [order["giver"], int(order["reward"])]))
 	_sell_button.pressed.connect(_on_sell_pressed)
@@ -56,6 +59,17 @@ func _ready() -> void:
 	_travel_fade.hide()
 	_refresh_wallet()
 	_refresh_gear()
+	_refresh_journey()
+
+
+func _refresh_journey() -> void:
+	var goal := GameState.next_goal()
+	if goal.is_empty():
+		%JourneyHint.text = "Путь рыболова завершён!\nОхоться за новыми рекордами."
+		return
+	%JourneyHint.text = "%s · %d/%d · +%d монет\n%s" % [goal["title"],
+		mini(GameState.journey_progress(goal["metric"]), int(goal["target"])),
+		int(goal["target"]), int(goal["reward"]), goal["hint"]]
 
 
 func set_biome(biome: BiomeData) -> void:

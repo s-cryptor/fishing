@@ -11,7 +11,7 @@
 [ext_resource type="Script" path="res://scripts/ui/fish_portrait.gd" id="10_portrait"]
 
 [sub_resource type="StyleBoxFlat" id="orders_panel"]
-bg_color = Color(0.08, 0.12, 0.18, 0.6)
+bg_color = Color(0.94, 0.91, 0.81, 0.96)
 corner_radius_top_left = 12
 corner_radius_top_right = 12
 corner_radius_bottom_right = 12
@@ -20,6 +20,31 @@ content_margin_left = 14.0
 content_margin_top = 10.0
 content_margin_right = 14.0
 content_margin_bottom = 10.0
+
+[sub_resource type="StyleBoxFlat" id="paper_card"]
+bg_color = Color(0.94, 0.91, 0.81, 0.96)
+corner_radius_top_left = 14
+corner_radius_top_right = 14
+corner_radius_bottom_left = 14
+corner_radius_bottom_right = 14
+content_margin_left = 16.0
+content_margin_right = 16.0
+content_margin_top = 12.0
+content_margin_bottom = 12.0
+shadow_color = Color(0.03, 0.1, 0.08, 0.17)
+shadow_size = 5
+shadow_offset = Vector2(0, 3)
+
+[sub_resource type="StyleBoxFlat" id="hint_card"]
+bg_color = Color(0.08, 0.2, 0.19, 0.92)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_left = 12
+corner_radius_bottom_right = 12
+content_margin_left = 14.0
+content_margin_right = 14.0
+content_margin_top = 9.0
+content_margin_bottom = 9.0
 
 [node name="Hud" type="CanvasLayer"]
 script = ExtResource("1_hud")
@@ -44,33 +69,50 @@ grow_horizontal = 2
 mouse_filter = 2
 theme_override_constants/separation = 12
 
-[node name="Wallet" type="VBoxContainer" parent="Root/TopBar"]
+[node name="Wallet" type="PanelContainer" parent="Root/TopBar"]
+layout_mode = 2
+custom_minimum_size = Vector2(230, 0)
+theme_override_styles/panel = SubResource("paper_card")
+
+[node name="VBox" type="VBoxContainer" parent="Root/TopBar/Wallet"]
 layout_mode = 2
 theme_override_constants/separation = 0
 
-[node name="MoneyLabel" type="Label" parent="Root/TopBar/Wallet"]
+[node name="Balance" type="HBoxContainer" parent="Root/TopBar/Wallet/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CoinIcon" type="TextureRect" parent="Root/TopBar/Wallet/VBox/Balance"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 26
+custom_minimum_size = Vector2(24, 24)
+expand_mode = 1
+stretch_mode = 5
+
+[node name="MoneyLabel" type="Label" parent="Root/TopBar/Wallet/VBox/Balance"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.2, 0.32, 0.26, 1)
 text = "Монеты: 0"
 
-[node name="GearLabel" type="Label" parent="Root/TopBar/Wallet"]
+[node name="GearLabel" type="Label" parent="Root/TopBar/Wallet/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.85, 0.9, 1, 0.85)
-theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.37, 0.44, 0.35, 1)
+theme_override_font_sizes/font_size = 15
 
-[node name="ClockLabel" type="Label" parent="Root/TopBar/Wallet"]
+[node name="ClockLabel" type="Label" parent="Root/TopBar/Wallet/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.92, 0.7, 0.9)
-theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.37, 0.44, 0.35, 1)
+theme_override_font_sizes/font_size = 15
 
-[node name="BiomeLabel" type="Label" parent="Root/TopBar/Wallet"]
+[node name="BiomeLabel" type="Label" parent="Root/TopBar/Wallet/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.22, 0.62, 0.82, 1)
-theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.26, 0.4, 0.34, 1)
+theme_override_font_sizes/font_size = 16
 text = "Родное озеро"
 
 [node name="Spacer" type="Control" parent="Root/TopBar"]
@@ -83,15 +125,13 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 0
 focus_mode = 0
-theme_override_colors/font_color = Color(1, 0.88, 0.4, 1)
-text = "Поговорить с Лукой"
+text = "Лука"
 
 [node name="TravelButton" type="Button" parent="Root/TopBar"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 0
 focus_mode = 0
-theme_override_colors/font_color = Color(0.55, 1, 0.78, 1)
 text = "Плыть"
 
 [node name="SellButton" type="Button" parent="Root/TopBar"]
@@ -109,10 +149,11 @@ focus_mode = 0
 text = "Коллекция"
 
 [node name="OrdersTracker" type="PanelContainer" parent="Root"]
+unique_name_in_owner = true
 layout_mode = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -330.0
+offset_left = -300.0
 offset_top = 80.0
 offset_right = -16.0
 offset_bottom = 120.0
@@ -121,25 +162,28 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("orders_panel")
 script = ExtResource("9_orders")
 
-[node name="JourneyHint" type="Label" parent="Root"]
-unique_name_in_owner = true
+[node name="SideStack" type="VBoxContainer" parent="Root"]
 layout_mode = 0
 offset_left = 16.0
-offset_top = 155.0
-offset_right = 360.0
-offset_bottom = 245.0
-theme_override_font_sizes/font_size = 17
-theme_override_colors/font_color = Color(1, 0.9, 0.65, 1)
+offset_top = 160.0
+offset_right = 295.0
+offset_bottom = 265.0
+theme_override_constants/separation = 10
+mouse_filter = 2
+
+[node name="JourneyHint" type="Label" parent="Root/SideStack"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.23, 0.34, 0.28, 1)
+theme_override_styles/normal = SubResource("paper_card")
 autowrap_mode = 3
 mouse_filter = 2
 
-[node name="BaitButton" type="Button" parent="Root"]
+[node name="BaitButton" type="Button" parent="Root/SideStack"]
 unique_name_in_owner = true
-layout_mode = 0
-offset_left = 16.0
-offset_top = 260.0
-offset_right = 280.0
-offset_bottom = 305.0
+layout_mode = 2
+size_flags_horizontal = 0
 focus_mode = 0
 theme_override_font_sizes/font_size = 18
 
@@ -150,8 +194,9 @@ theme_override_constants/separation = 2
 
 [node name="Title" type="Label" parent="Root/OrdersTracker/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
-text = "Заказы соседей"
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.36, 0.44, 0.36, 1)
+text = "ЗАКАЗЫ СОСЕДЕЙ"
 
 [node name="OrdersList" type="VBoxContainer" parent="Root/OrdersTracker/VBox"]
 unique_name_in_owner = true
@@ -187,7 +232,7 @@ max_value = 1.0
 step = 0.001
 show_percentage = false
 
-[node name="FightPanel" type="VBoxContainer" parent="Root"]
+[node name="FightPanel" type="PanelContainer" parent="Root"]
 unique_name_in_owner = true
 layout_mode = 1
 anchor_left = 0.5
@@ -202,13 +247,19 @@ grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
 theme_override_constants/separation = 14
+theme_override_styles/panel = SubResource("hint_card")
 
-[node name="FightStatus" type="Label" parent="Root/FightPanel"]
+[node name="VBox" type="VBoxContainer" parent="Root/FightPanel"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="FightStatus" type="Label" parent="Root/FightPanel/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 horizontal_alignment = 1
+theme_override_font_sizes/font_size = 17
 
-[node name="TensionMeter" type="Control" parent="Root/FightPanel"]
+[node name="TensionMeter" type="Control" parent="Root/FightPanel/VBox"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 28)
 layout_mode = 2
@@ -218,13 +269,16 @@ script = ExtResource("3_tension")
 [node name="HintLabel" type="Label" parent="Root"]
 unique_name_in_owner = true
 layout_mode = 1
+anchor_left = 0.5
 anchor_top = 1.0
-anchor_right = 1.0
+anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = 16.0
-offset_top = -70.0
-offset_right = -16.0
-offset_bottom = -24.0
+offset_left = -375.0
+offset_top = -72.0
+offset_right = 375.0
+offset_bottom = -20.0
+theme_override_font_sizes/font_size = 17
+theme_override_styles/normal = SubResource("hint_card")
 grow_horizontal = 2
 grow_vertical = 0
 horizontal_alignment = 1
@@ -295,6 +349,15 @@ mouse_filter = 2
 
 [node name="ActionButton" type="TouchScreenButton" parent="Root/TouchControls/ActionAnchor"]
 script = ExtResource("5_action")
+
+[node name="ModalShade" type="ColorRect" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.025, 0.09, 0.08, 0.5)
 
 [node name="CatchPopup" type="PanelContainer" parent="Root"]
 unique_name_in_owner = true

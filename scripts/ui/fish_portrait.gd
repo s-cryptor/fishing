@@ -23,7 +23,7 @@ func _draw() -> void:
 	var length := minf(size.x * 0.55, size.y * 1.8)
 	var slender := fish.id in [&"pike", &"barramundi", &"sawfish", &"catfish", &"atlantic_salmon", &"arctic_char"]
 	var height := length * (0.28 if slender else 0.43)
-	var base := fish.color if discovered else Color("#243c50")
+	var base := fish.color if discovered else Color("#36544e")
 	var points := PackedVector2Array()
 	for i in 24:
 		var angle := TAU * i / 24.0
@@ -59,6 +59,6 @@ func _draw() -> void:
 func _background() -> StyleBoxFlat:
 	if _box == null:
 		_box = StyleBoxFlat.new()
-		_box.bg_color = Color("#102e40")
+		_box.bg_color = Color("#20423d")
 		_box.set_corner_radius_all(12)
 	return _box

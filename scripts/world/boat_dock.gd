@@ -16,6 +16,7 @@ var _travelling := false
 
 
 func _ready() -> void:
+	HarborProps.dock(self)
 	body_entered.connect(_on_body_changed.bind(true))
 	body_exited.connect(_on_body_changed.bind(false))
 	hud.travel_requested.connect(_travel)
@@ -34,10 +35,13 @@ func _on_body_changed(body: Node3D, nearby: bool) -> void:
 
 
 func _refresh_availability() -> void:
+	$Sign.visible = _nearby
 	$Sign.text = destination_water.biome.display_name
 	if requires_explorer and not GameState.boat_upgraded:
 		$Sign.text += "\nНужна лодка исследователя"
 	$Sign.font_size = 42
+	$Sign.modulate = Color("#f0e5c6")
+	$Sign.outline_size = 4
 	if _nearby:
 		hud.set_travel_available(destination_water.biome.display_name, requires_explorer and not GameState.boat_upgraded)
 

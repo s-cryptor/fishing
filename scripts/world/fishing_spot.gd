@@ -55,6 +55,7 @@ func _process(delta: float) -> void:
 	# Тень рыбы лениво кружит, пузыри поднимаются и появляются заново.
 	_shadow.position = Vector3(cos(_time * 0.7), 0.0, sin(_time * 0.7)) * radius * 0.35
 	_shadow.rotation.y = -_time * 0.7
+	$Ring.scale = Vector3.ONE * (0.86 + sin(_time * 0.8) * 0.08)
 	for i in _bubbles.size():
 		var bubble := _bubbles[i] as Node3D
 		var phase := fmod(_time * 0.8 + i * 0.37, 1.0)
@@ -70,7 +71,7 @@ func _relocate(animated: bool) -> void:
 		await tween.finished
 	_lifetime = randf_range(min_lifetime, max_lifetime)
 	var angle := randf() * TAU
-	var distance := _water.shore_radius + randf_range(min_offshore, max_offshore)
+	var distance := ShoreProfile.radius_at(angle, _water.shore_radius) + randf_range(min_offshore, max_offshore)
 	global_position = _water.global_position + Vector3(cos(angle) * distance, _water.water_level + 0.02, sin(angle) * distance)
 	scale = Vector3.ONE * 0.01
 	var appear := create_tween()

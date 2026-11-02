@@ -5,6 +5,7 @@ extends CharacterBody3D
 @export var turn_speed := 12.0
 
 var can_move := true
+var ride_target: Node3D
 
 @onready var _model: FisherModel = $Model
 @onready var rod_tip: Marker3D = $Model/RodTip
@@ -15,6 +16,11 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if is_instance_valid(ride_target):
+		global_position = ride_target.global_position
+		velocity = Vector3.ZERO
+		_model.animate_walk(false, delta)
+		return
 	var input := Input.get_vector(&"move_left", &"move_right", &"move_forward", &"move_back")
 	if not can_move:
 		input = Vector2.ZERO
@@ -54,3 +60,7 @@ func fishing_pose(active: bool, charge: float, tension: float, reeling: bool) ->
 
 func cast_gesture() -> void:
 	_model.cast_kick = 1.0
+
+
+func face_direction(direction: Vector3) -> void:
+	_model.rotation.y = atan2(direction.x, direction.z)

@@ -1,7 +1,6 @@
 class_name BoatDock
 extends Area3D
-## Причал-переход между биомами. Лодка пока служит транспортом:
-## управление ей появится вместе с экспедициями и улучшениями.
+## Причал: быстрый переход между биомами или посадка для прогулки по бухте.
 
 @export var destination_water: FishingWater
 @export var arrival_point: Marker3D
@@ -16,6 +15,7 @@ var _travelling := false
 
 
 func _ready() -> void:
+	add_to_group(&"boat_dock")
 	HarborProps.dock(self)
 	body_entered.connect(_on_body_changed.bind(true))
 	body_exited.connect(_on_body_changed.bind(false))
@@ -28,10 +28,15 @@ func _on_body_changed(body: Node3D, nearby: bool) -> void:
 	if body is not Player:
 		return
 	_nearby = nearby
+	if player.ride_target != null:
+		_nearby = false
+		hud.clear_travel_available(destination_water.biome.display_name)
+		return
 	if nearby:
 		_refresh_availability()
 	else:
 		hud.clear_travel_available(destination_water.biome.display_name)
+		hud.set_sailing_available(false)
 
 
 func _refresh_availability() -> void:
@@ -44,6 +49,7 @@ func _refresh_availability() -> void:
 	$Sign.outline_size = 4
 	if _nearby:
 		hud.set_travel_available(destination_water.biome.display_name, requires_explorer and not GameState.boat_upgraded)
+		hud.set_sailing_available(true, "На воду · B")
 
 
 func _travel() -> void:

@@ -1,5 +1,7 @@
 [gd_scene format=3]
 
+[ext_resource type="Script" path="res://scripts/world/boat_sailing.gd" id="21_sailing"]
+
 [ext_resource type="Script" path="res://scripts/world/fishing_water.gd" id="1_water"]
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="2_player"]
 [ext_resource type="PackedScene" path="res://scenes/tree.tscn" id="3_tree"]
@@ -367,6 +369,12 @@ outline_size = 24
 
 [node name="FishingLine" type="MeshInstance3D" parent="."]
 script = ExtResource("6_line")
+
+[node name="BoatSailing" type="Node3D" parent="." node_paths=PackedStringArray("player", "controller", "hud")]
+script = ExtResource("21_sailing")
+player = NodePath("../Player")
+controller = NodePath("../FishingController")
+hud = NodePath("../Hud")
 
 [node name="Hud" parent="." instance=ExtResource("7_hud")]
 

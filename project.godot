@@ -17,6 +17,7 @@ DebugTools="*res://scripts/debug/debug_tools.gd"
 GameState="*res://scripts/core/game_state.gd"
 WorldClock="*res://scripts/core/world_clock.gd"
 Sfx="*res://scripts/audio/sfx.gd"
+PlayerSettings="*res://scripts/core/player_settings.gd"
 
 [display]
 
@@ -55,6 +56,11 @@ interact={
 toggle_collection={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"device":-1,"physical_keycode":67)]
+}
+
+pause={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"device":-1,"physical_keycode":4194305), Object(InputEventJoypadButton,"device":-1,"button_index":6)]
 }
 
 [rendering]

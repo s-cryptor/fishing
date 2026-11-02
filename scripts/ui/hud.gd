@@ -209,6 +209,9 @@ func _open_shop() -> void:
 
 
 func _toggle_collection() -> void:
+	var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
+	if controller and controller.phase != FishingController.Phase.IDLE:
+		return
 	_shop.hide()
 	_collection.toggle()
 

@@ -47,6 +47,9 @@ jobs:
       - name: Проверка переходов на лодке
         run: ~/godot/godot --headless --path . -s res://tests/test_boat_travel.gd -- --save=user://boat-test.json --mute
 
+      - name: Проверка прогрессии
+        run: ~/godot/godot --headless --path . -s res://tests/test_progression.gd -- --save=user://progression-test.json --mute
+
       - name: Экспорт в веб
         run: |
           mkdir -p build/web

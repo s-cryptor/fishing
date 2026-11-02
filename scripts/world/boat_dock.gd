@@ -42,6 +42,7 @@ func _travel() -> void:
 	player.velocity = Vector3.ZERO
 	camera_rig.snap_to_target()
 	hud.set_biome(destination_water.biome)
+	GameState.visit_biome(destination_water.biome.id)
 	await hud.fade_in()
 	player.can_move = true
 	_travelling = false

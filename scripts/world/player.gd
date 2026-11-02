@@ -6,7 +6,7 @@ extends CharacterBody3D
 
 var can_move := true
 
-@onready var _model: Node3D = $Model
+@onready var _model: FisherModel = $Model
 @onready var rod_tip: Marker3D = $Model/RodTip
 
 
@@ -31,6 +31,7 @@ func _physics_process(delta: float) -> void:
 	else:
 		velocity += get_gravity() * delta
 	move_and_slide()
+	_model.animate_walk(direction.length_squared() > 0.01, delta)
 
 	if direction.length_squared() > 0.01:
 		var yaw := atan2(direction.x, direction.z)

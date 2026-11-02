@@ -76,7 +76,8 @@ func _update_rendering() -> void:
 
 func _process(delta: float) -> void:
 	_time += delta
-	_holder.rotation = Vector3(0, _yaw + sin(_time * 0.5) * 0.09, sin(_time * 0.7) * 0.025)
+	var tilt := 0.7 if fish and fish.id == &"greenland_halibut" else (0.25 if fish and fish.id == &"sawfish" else 0.0)
+	_holder.rotation = Vector3(tilt, _yaw + sin(_time * 0.5) * 0.09, sin(_time * 0.7) * 0.025)
 	_holder.position.y = sin(_time * 1.5) * 0.035
 	queue_redraw()
 

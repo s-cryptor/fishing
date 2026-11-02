@@ -4,6 +4,8 @@ extends PanelContainer
 
 const UNKNOWN_COLOR := Color("#1b2633")
 
+signal fish_selected(fish: FishData)
+
 @onready var _header: Label = %CollectionHeader
 @onready var _grid: GridContainer = %CollectionGrid
 
@@ -17,6 +19,7 @@ func _ready() -> void:
 	$VBox.add_child(tabs)
 	$VBox.move_child(tabs, 1)
 	var pages: Array = []
+	var group := ButtonGroup.new()
 	for biome in GameState.BIOMES.biomes:
 		pages.append([biome.display_name, biome.habitat])
 	pages.append(["Путь рыболова", &"journey"])
@@ -25,6 +28,9 @@ func _ready() -> void:
 		button.text = pair[0]
 		button.add_theme_font_size_override("font_size", 16)
 		button.focus_mode = Control.FOCUS_NONE
+		button.toggle_mode = true
+		button.button_group = group
+		button.button_pressed = pair[1] == _habitat
 		button.pressed.connect(func() -> void:
 			_habitat = pair[1]
 			_rebuild())
@@ -79,17 +85,29 @@ func _rebuild_journey() -> void:
 
 func _make_card(fish: FishData, entry: Dictionary) -> Control:
 	var caught := not entry.is_empty()
+	var panel := PanelContainer.new()
+	panel.custom_minimum_size = Vector2(190, 250)
+	var background := StyleBoxFlat.new()
+	background.bg_color = Color("#20443e") if caught else Color("#193a35")
+	background.set_corner_radius_all(10)
+	background.content_margin_left = 10
+	background.content_margin_right = 10
+	background.content_margin_top = 10
+	background.content_margin_bottom = 10
+	panel.add_theme_stylebox_override("panel", background)
 	var box := VBoxContainer.new()
-	box.custom_minimum_size = Vector2(190, 0)
+	panel.add_child(box)
 
 	var swatch := FishPortrait.new()
-	swatch.custom_minimum_size = Vector2(0, 60)
+	swatch.custom_minimum_size = Vector2(0, 72)
 	swatch.fish = fish
 	swatch.discovered = caught
 	box.add_child(swatch)
 
 	var name_label := Label.new()
 	name_label.text = fish.display_name if caught else "???"
+	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	name_label.add_theme_font_size_override("font_size", 18)
 	box.add_child(name_label)
 
 	var rarity_label := Label.new()
@@ -111,10 +129,20 @@ func _make_card(fish: FishData, entry: Dictionary) -> Control:
 			trophy.add_theme_font_size_override("font_size", 16)
 			trophy.modulate = Color("#ffd578")
 			box.add_child(trophy)
+		var spacer := Control.new()
+		spacer.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		box.add_child(spacer)
+		var inspect := Button.new()
+		inspect.name = "InspectButton"
+		inspect.text = "Рассмотреть"
+		inspect.focus_mode = Control.FOCUS_NONE
+		inspect.add_theme_font_size_override("font_size", 16)
+		inspect.pressed.connect(fish_selected.emit.bind(fish))
+		box.add_child(inspect)
 	else:
 		var clue := Label.new()
 		clue.text = "Клюёт: %s" % DayTime.describe(fish.active_times)
 		clue.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		clue.add_theme_font_size_override("font_size", 16)
 		box.add_child(clue)
-	return box
+	return panel

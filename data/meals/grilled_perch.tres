@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="MealData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/meal_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"grilled_perch"
+display_name = "Окунь на углях"
+description = "Хрустящая корочка, щепотка соли и запах яблоневых дров. Для тех, кто сегодня ищет особенный улов."
+ingredient_label = "1 окунь"
+ingredient_fish = &"perch"
+ingredient_count = 1
+charges = 3
+luck_bonus = 0.35
+kind = 1

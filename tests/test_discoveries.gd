@@ -20,6 +20,9 @@ func _run() -> void:
 	state.boat_upgraded = false
 	state.sales = 0
 	state.money = 0
+	state.active_meal_id = ""
+	state.meal_charges = 0
+	state.meals_cooked = 0
 	_check(state.LANDMARKS.landmarks.size() == 3, "в каталоге три уникальных ориентира")
 	var ids: Array[StringName] = []
 	var valid := true
@@ -58,7 +61,7 @@ func _run() -> void:
 	state._load()
 	_check(state.money == 120 and state.discovered_landmarks.size() == 3, "открытия и выплата сохраняются без повторной награды")
 	var store: SaveStore = state._store
-	_check(int(store.load_data().get("version", 0)) == 6, "новое сохранение записано как v6")
+	_check(int(store.load_data().get("version", 0)) == SaveStore.VERSION, "новое сохранение записано в актуальной версии")
 	hud._toggle_collection()
 	var collection: Node = hud.get_node("Root/CollectionPanel")
 	var tabs: Node = collection.get_node("VBox").get_child(1)

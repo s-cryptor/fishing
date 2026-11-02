@@ -13,6 +13,8 @@ goals = Array[Dictionary]([{
 }, {
 "id": "new_rod", "title": "Хороший инструмент", "hint": "Купи вторую удочку у Луки на острове.", "metric": "rods", "target": 2, "reward": 40
 }, {
+"id": "first_meal", "title": "В дорогу с теплом", "hint": "Марта у огорода приготовит обычный улов для походного усиления.", "metric": "meals", "target": 1, "reward": 40
+}, {
 "id": "mangrove_visit", "title": "За горизонт", "hint": "Сядь в лодку у причала слева от дома.", "metric": "mangrove_visit", "target": 1, "reward": 50
 }, {
 "id": "ten_catches", "title": "Ещё один заброс", "hint": "Поймай 10 рыб. Рыбные места с пузырями ускоряют клёв.", "metric": "catches", "target": 10, "reward": 80

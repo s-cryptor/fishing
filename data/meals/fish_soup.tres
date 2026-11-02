@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="MealData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/meal_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+id = &"fish_soup"
+display_name = "Рыбацкая уха"
+description = "Горячая уха с травами из огорода. Согревает руки и помогает увереннее крутить катушку."
+ingredient_label = "2 обычные рыбы"
+ingredient_count = 2
+charges = 5
+reel_speed_mult = 1.1
+kind = 0

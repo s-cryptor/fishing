@@ -203,6 +203,7 @@ func _process(delta: float) -> void:
 		if player:
 			print("DEBUG player_position=%s radius=%.2f" % [player.global_position,
 					Vector2(player.global_position.x, player.global_position.z).length()])
+		print("DEBUG fps=%d nodes=%d" % [Engine.get_frames_per_second(), get_tree().get_node_count()])
 		get_tree().quit()
 
 

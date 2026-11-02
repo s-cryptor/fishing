@@ -4,7 +4,7 @@ extends RefCounted
 ## Облачный бэкенд для синхронизации между устройствами реализует
 ## тот же load_data()/save_data().
 
-const VERSION := 6
+const VERSION := 7
 
 var path: String
 var last_error := ""

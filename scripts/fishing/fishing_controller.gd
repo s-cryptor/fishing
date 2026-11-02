@@ -110,7 +110,7 @@ func _release_cast() -> void:
 		hud.toast("Здесь не водится рыба")
 		_to_idle()
 		return
-	GameState.consume_bait()
+	GameState.consume_fishing_supplies()
 	session.state_changed.connect(_on_session_state_changed)
 	session.thrash_started.connect(bobber.splash)
 	session.thrash_started.connect(Sfx.play.bind(&"thrash", -4.0))

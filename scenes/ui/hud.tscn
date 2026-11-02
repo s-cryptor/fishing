@@ -12,6 +12,7 @@
 [ext_resource type="Script" path="res://scripts/ui/fight_readout.gd" id="11_fight"]
 [ext_resource type="Script" path="res://scripts/ui/fish_showcase.gd" id="12_showcase"]
 [ext_resource type="Script" path="res://scripts/ui/landmark_popup.gd" id="13_landmark"]
+[ext_resource type="Script" path="res://scripts/ui/cooking_panel.gd" id="14_kitchen"]
 
 [sub_resource type="StyleBoxFlat" id="orders_panel"]
 bg_color = Color(0.94, 0.91, 0.81, 0.96)
@@ -190,6 +191,14 @@ size_flags_horizontal = 0
 focus_mode = 0
 theme_override_font_sizes/font_size = 18
 
+[node name="MealInfo" type="Label" parent="Root/SideStack"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("orders_panel")
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.2, 0.32, 0.26, 1)
+autowrap_mode = 3
+
 [node name="VBox" type="VBoxContainer" parent="Root/OrdersTracker"]
 layout_mode = 2
 mouse_filter = 2
@@ -343,6 +352,20 @@ offset_bottom = -87.0
 focus_mode = 0
 text = "Осмотреть · E"
 autowrap_mode = 3
+
+[node name="KitchenButton" type="Button" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = -125.0
+offset_right = 125.0
+offset_top = -135.0
+offset_bottom = -87.0
+focus_mode = 0
+text = "Марта · E"
 
 [node name="TouchControls" type="Control" parent="Root"]
 unique_name_in_owner = true
@@ -543,6 +566,21 @@ offset_bottom = 190.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("13_landmark")
+
+[node name="CookingPanel" type="PanelContainer" parent="Root"]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_left = 0.5
+anchor_right = 0.5
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = -390.0
+offset_right = 390.0
+offset_top = -280.0
+offset_bottom = 280.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("14_kitchen")
 
 [node name="ShopPanel" type="PanelContainer" parent="Root"]
 unique_name_in_owner = true

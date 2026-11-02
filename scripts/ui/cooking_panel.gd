@@ -10,6 +10,7 @@ var _active: Label
 
 func _ready() -> void:
 	hide()
+	ModalFocus.watch(self, &"CookButton")
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 12)
 	add_child(box)
@@ -59,6 +60,7 @@ func _refresh_if_visible() -> void:
 
 
 func _rebuild() -> void:
+	ModalFocus.restore.call_deferred(self, &"CookButton")
 	for child in _list.get_children():
 		_list.remove_child(child)
 		child.queue_free()

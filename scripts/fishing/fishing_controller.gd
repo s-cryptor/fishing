@@ -32,6 +32,7 @@ var _preview_label: Label3D
 var _fight_time := 0.0
 var _cast_guide: MeshInstance3D
 var _guide_mesh := ImmediateMesh.new()
+var _require_action_release := false
 
 
 func _ready() -> void:
@@ -54,6 +55,10 @@ func _process(delta: float) -> void:
 		session.tension if fighting else 0.0, fighting and Input.is_action_pressed(ACTION))
 	match phase:
 		Phase.IDLE:
+			if _require_action_release:
+				if not Input.is_action_pressed(ACTION):
+					_require_action_release = false
+				return
 			if Input.is_action_just_pressed(ACTION) and not hud.is_modal_open():
 				_start_charge()
 		Phase.CHARGING:
@@ -228,11 +233,17 @@ func _on_catch_popup_closed() -> void:
 
 
 func _to_idle() -> void:
+	require_action_release()
 	hud.set_fishing_focus(false)
 	phase = Phase.IDLE
 	player.can_move = true
 	camera_rig.focus = null
 	hud.show_idle_hint()
+
+
+## Подтверждение в меню не должно в том же кадре стать новым забросом.
+func require_action_release() -> void:
+	_require_action_release = true
 
 
 func _create_preview() -> void:

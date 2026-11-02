@@ -10,6 +10,7 @@ var _body: Label
 
 func _ready() -> void:
 	hide()
+	ModalFocus.watch(self, &"ContinueButton")
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 16)
 	add_child(box)

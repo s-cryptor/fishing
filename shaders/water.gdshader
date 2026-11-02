@@ -20,7 +20,8 @@ float noise(vec2 p) {
 
 float radius_at(float angle) {
 	float cove_angle = atan(sin(angle - shore_cove.x), cos(angle - shore_cove.x));
-	float cove = exp(-pow(cove_angle / shore_cove.y, 2.0)) * shore_cove.z;
+	float distance_to_cove = cove_angle / shore_cove.y;
+	float cove = exp(-distance_to_cove * distance_to_cove) * shore_cove.z;
 	return 12.8 + sin(angle * 3.0 + 0.4) * shore_waves.x + sin(angle * 5.0 - 0.7) * shore_waves.y + cos(angle * 2.0) * shore_waves.z - cove;
 }
 

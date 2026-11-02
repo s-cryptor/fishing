@@ -7,5 +7,6 @@ const COVE := Vector3(0.35, 0.34, 2.8)
 
 static func radius_at(angle: float, base := 12.8) -> float:
 	var cove_angle := atan2(sin(angle - COVE.x), cos(angle - COVE.x))
-	var cove := exp(-pow(cove_angle / COVE.y, 2.0)) * COVE.z
+	var distance_to_cove := cove_angle / COVE.y
+	var cove := exp(-distance_to_cove * distance_to_cove) * COVE.z
 	return base + sin(angle * 3.0 + 0.4) * WAVES.x + sin(angle * 5.0 - 0.7) * WAVES.y + cos(angle * 2.0) * WAVES.z - cove

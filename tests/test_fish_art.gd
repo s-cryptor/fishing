@@ -10,13 +10,22 @@ func _run() -> void:
 	var state := root.get_node("GameState")
 	var shapes: Dictionary = {}
 	for fish in state.catalog.fish:
+		var portrait := FishPortrait.portrait_for(fish.id)
+		_check(portrait != null and portrait.get_width() == 384 and portrait.get_height() == 160,
+			"%s: портрет получен из той же модели и подготовлен заранее" % fish.id)
+		if portrait:
+			var image := portrait.get_image()
+			_check(image.get_pixel(0, 0).a == 0.0 and image.get_pixel(192, 80).a > 0.5,
+				"%s: у портрета прозрачные края и видимое тело" % fish.id)
 		var model := FishModel.new()
 		root.add_child(model)
 		model.build(fish)
+		var root_children := model.get_child_count()
 		var finite := true
 		var vertices := 0
 		var fingerprint := 0
 		var meshes := model.find_children("*", "MeshInstance3D", true, false)
+		var imported := FishModel.appearance_for(fish.id) != null
 		for mesh: MeshInstance3D in meshes:
 			for surface in mesh.mesh.get_surface_count():
 				var array := mesh.mesh.surface_get_arrays(surface)
@@ -25,16 +34,20 @@ func _run() -> void:
 				fingerprint = hash([fingerprint, positions, array[Mesh.ARRAY_COLOR]])
 				for point in positions:
 					finite = finite and point.is_finite()
-		_check(finite and vertices > 500 and vertices < 15000 and meshes.size() == 4,
-			"%s: конечная геометрия, 4 меша, %d вершин" % [fish.id, vertices])
+		_check(finite and vertices > 500 and vertices < 15000 and meshes.size() == (2 if imported else 4),
+			"%s: конечная геометрия, %d мешей, %d вершин" % [fish.id, meshes.size(), vertices])
 		_check(not shapes.has(fingerprint), "%s отличается геометрией или окраской от остальных видов" % fish.id)
 		shapes[fingerprint] = fish.id
-		var old_tail: float = model._tail.rotation.y
-		model._process(0.2)
-		_check(model._tail.rotation.y != old_tail and not is_zero_approx(model._pectoral[0].rotation.x),
-			"%s: хвост и грудные плавники двигаются независимо" % fish.id)
+		if imported:
+			var players := model.find_children("*", "AnimationPlayer", true, false)
+			_check(players.size() == 1 and players[0].is_playing(), "%s: работает исходная анимация плавания" % fish.id)
+		else:
+			var old_tail: float = model._tail.rotation.y
+			model._process(0.2)
+			_check(model._tail.rotation.y != old_tail and not is_zero_approx(model._pectoral[0].rotation.x),
+				"%s: хвост и грудные плавники двигаются независимо" % fish.id)
 		model.build(fish)
-		_check(model.get_child_count() == 4, "%s: повторная сборка не накапливает меши" % fish.id)
+		_check(model.get_child_count() == root_children, "%s: повторная сборка не накапливает меши" % fish.id)
 		model.queue_free()
 		await process_frame
 	var showcase := FishShowcase.new()

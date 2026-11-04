@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="FishData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/fish_data.gd" id="1_fish"]
+
+[resource]
+script = ExtResource("1_fish")
+id = &"mangrove_snapper"
+display_name = "Мангровый луциан"
+description = "Медно-красный хищник отмелей. В сумерках выходит из укрытия и проверяет рыболова короткими рывками."
+rarity = 2
+color = Color(0.73, 0.39, 0.29, 1)
+min_weight_kg = 0.4
+max_weight_kg = 4.2
+price_per_kg = 45.0
+strength = 0.57
+thrash_rate = 0.46
+stamina = 9.0
+spawn_weight = 20.0
+habitats = Array[StringName]([&"mangrove"])
+active_times = 13

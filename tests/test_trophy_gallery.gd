@@ -53,6 +53,10 @@ func _run() -> void:
 	popup.open(state.catalog.get_fish(&"roach"), 0.2, false)
 	_check(popup.get_node("VBox/TakeButton").text == "Забрать", "следующий настоящий улов восстанавливает кнопку забора")
 	popup.close()
+	var tabs := collection.get_node("VBox").get_child(1)
+	tabs.get_child(1).button_pressed = true
+	_check(tabs.get_child(1).get_theme_color("font_focus_color") != tabs.get_child(0).get_theme_color("font_focus_color"),
+		"активная вкладка отличается от неактивной независимо от клавиатурного фокуса")
 	scene.queue_free()
 	await process_frame
 	quit(1 if _failures else 0)

@@ -51,6 +51,7 @@ var meals_cooked := 0
 ## Подробности последнего улова для карточки результата.
 var last_catch_report: Dictionary = {}
 var save_recovery_notice := ""
+var progress_read_only := false
 
 var _store := SaveStore.new(DebugTools.save_path if DebugTools.save_path else "user://save.json")
 
@@ -398,6 +399,11 @@ func _save() -> void:
 func _load() -> void:
 	var data := _store.load_data()
 	save_recovery_notice = "Сохранение восстановлено после сбоя" if not _store.recovered_from.is_empty() else _store.last_error
+	progress_read_only = int(data.get("version", 0)) > SaveStore.VERSION
+	if progress_read_only:
+		# Не интерпретируем неизвестные поля будущей схемы. SaveStore запрещает запись.
+		data = {}
+		save_recovery_notice = "Прогресс создан более новой версией игры и защищён от записи. Обнови страницу."
 	money = int(data.get("money", 0))
 	inventory.assign(data.get("inventory", []))
 	collection = data.get("collection", {})

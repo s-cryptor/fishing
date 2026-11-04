@@ -21,7 +21,9 @@ goals = Array[Dictionary]([{
 }, {
 "id": "lake_collection", "title": "Знаток озера", "hint": "Открой все 6 озёрных видов. Ищи карпа на рассвете и закате.", "metric": "lake_species", "target": 6, "reward": 350
 }, {
-"id": "mangrove_collection", "title": "Секреты мангров", "hint": "Открой все 4 вида мангровых отмелей.", "metric": "mangrove_species", "target": 4, "reward": 300
+"id": "mangrove_collection", "title": "Секреты мангров", "hint": "Открой 4 разных вида в мангровых отмелях.", "metric": "mangrove_species", "target": 4, "reward": 300
+}, {
+"id": "mangrove_complete", "title": "Все оттенки отмелей", "hint": "Открой все 5 видов мангров. Луциан выходит на рассвете, закате и ночью.", "metric": "mangrove_species", "target": 5, "reward": 120
 }, {
 "id": "golden_trophy", "title": "Золотой трофей", "hint": "Поймай рыбу весом не меньше 85% диапазона её вида.", "metric": "trophies", "target": 1, "reward": 100
 }, {

@@ -70,6 +70,7 @@ func _rebuild() -> void:
 	_model = FishModel.new()
 	_model.build(fish)
 	_holder.add_child(_model)
+	_model.position = -_model.presentation_center()
 	_yaw = -0.22
 	_time = 0.0
 	_update_rendering()
@@ -80,6 +81,7 @@ func _update_rendering() -> void:
 	_viewport.render_target_update_mode = SubViewport.UPDATE_ALWAYS if active else SubViewport.UPDATE_DISABLED
 	set_process(active)
 	if _model:
+		_model.process_mode = Node.PROCESS_MODE_INHERIT if active else Node.PROCESS_MODE_DISABLED
 		_model.set_process(active)
 	queue_redraw()
 

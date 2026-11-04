@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="FishAppearanceCatalog" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/fish_appearance_catalog.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/data/fish_appearance.gd" id="2"]
+[ext_resource type="Resource" path="res://data/fish_appearances/mangrove_snapper.tres" id="3"]
+
+[resource]
+script = ExtResource("1")
+appearances = Array[ExtResource("2")]([ExtResource("3")])

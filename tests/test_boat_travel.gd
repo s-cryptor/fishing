@@ -152,7 +152,11 @@ func _run() -> void:
 	for fish in state.catalog.fish:
 		popup.open(fish, fish.min_weight_kg, false)
 		var showcase := popup.get_node("VBox/Swatch") as FishShowcase
-		_check(showcase._model.get_node("Body").mesh.get_surface_count() == 1,
+		var meshes := showcase._model.find_children("*", "MeshInstance3D", true, false)
+		var surfaces := 0
+		for mesh: MeshInstance3D in meshes:
+			surfaces += mesh.mesh.get_surface_count()
+		_check(surfaces > 0,
 			"объёмный трофей %s собран" % fish.display_name)
 		popup.close()
 		_check(showcase._viewport.render_target_update_mode == SubViewport.UPDATE_DISABLED,

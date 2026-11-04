@@ -65,6 +65,8 @@ func _rebuild() -> void:
 		_list.remove_child(child)
 		child.queue_free()
 	_greeting.text = "Марта: Редкий улов я не трогаю. А из обычного приготовим что-нибудь тёплое в дорогу. Рекорды останутся в журнале."
+	if GameState.found_messages.size() == GameState.MESSAGES.messages.size():
+		_greeting.text = "Марта: Я узнала почерк Эмиля. Спасибо, что вернул эти слова домой. Флажок на твоей лодке — такой же, как на его рисунке. А теперь давай соберём тебе обед в дорогу."
 	var active := GameState.active_meal()
 	_active.text = "%s · ещё %s. Новое блюдо — когда закончится эффект." % [active.display_name, MealData.casts_text(GameState.meal_charges)] if active else "Одно блюдо за раз · эффект тратится только при успешном забросе в воду"
 	for meal in GameState.MEALS.meals:

@@ -15,6 +15,7 @@ var _sailing_available := false
 var _return_to_collection := false
 var _return_from_landmark := false
 var _nearby_landmark: LandmarkData
+var _nearby_message: DriftMessageData
 var _hint_template := ""
 var _kitchen_available := false
 
@@ -61,6 +62,8 @@ func _ready() -> void:
 		_hint_label.text = _hint_template.format({"action": _action_name})
 		if _nearby_landmark:
 			set_landmark_available(_nearby_landmark)
+		if _nearby_message:
+			set_message_available(_nearby_message)
 		if _kitchen_available:
 			set_kitchen_available(true)
 		if _sailing_available:
@@ -98,6 +101,7 @@ func _ready() -> void:
 	_catch_popup.closed.connect(_on_catch_popup_closed)
 	_collection.fish_selected.connect(_inspect_fish)
 	_collection.landmark_selected.connect(_inspect_landmark_entry)
+	_collection.message_selected.connect(_inspect_message_entry)
 	%LandmarkButton.pressed.connect(landmark_requested.emit)
 	_landmark_popup.closed.connect(_on_landmark_closed)
 	%KitchenButton.pressed.connect(kitchen_requested.emit)
@@ -200,7 +204,7 @@ func _process(_delta: float) -> void:
 	%SailStatus.visible = _sailing_active and not _fishing_focus and not is_modal_open()
 	_hint_label.visible = not is_modal_open() and not _hint_label.text.is_empty()
 	%ModalShade.visible = _shop.visible or _collection.visible or _catch_popup.visible or _landmark_popup.visible or _kitchen.visible or _basket.visible
-	%LandmarkButton.visible = _nearby_landmark != null and not _fishing_focus and not is_modal_open()
+	%LandmarkButton.visible = (_nearby_landmark != null or _nearby_message != null) and not _fishing_focus and not is_modal_open()
 	%KitchenButton.visible = _kitchen_available and not _fishing_focus and not is_modal_open()
 
 
@@ -287,6 +291,7 @@ func open_kitchen() -> void:
 
 func set_landmark_available(data: LandmarkData) -> void:
 	_nearby_landmark = data
+	_nearby_message = null
 	%LandmarkButton.text = "Осмотреть" if _touch_available else ("Осмотреть · X" if not Input.get_connected_joypads().is_empty() else "Осмотреть · E")
 
 
@@ -297,6 +302,29 @@ func clear_landmark_available(data: LandmarkData) -> void:
 
 func show_landmark(data: LandmarkData, is_new: bool) -> void:
 	_landmark_popup.open(data, is_new)
+
+
+func set_message_available(data: DriftMessageData) -> void:
+	_nearby_message = data
+	_nearby_landmark = null
+	%LandmarkButton.text = "Подобрать письмо" if _touch_available else ("Подобрать · X" if not Input.get_connected_joypads().is_empty() else "Подобрать · E")
+
+
+func clear_message_available(data: DriftMessageData) -> void:
+	if _nearby_message == data:
+		_nearby_message = null
+
+
+func show_message(data: DriftMessageData, is_new: bool) -> void:
+	_landmark_popup.open_message(data, is_new)
+
+
+func _inspect_message_entry(data: DriftMessageData) -> void:
+	if not _collection.visible or String(data.id) not in GameState.found_messages:
+		return
+	_return_from_landmark = true
+	_collection.hide()
+	_landmark_popup.open_message(data, false)
 
 
 func _inspect_landmark_entry(data: LandmarkData) -> void:

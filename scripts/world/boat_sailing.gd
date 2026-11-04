@@ -128,7 +128,9 @@ func _physics_process(delta: float) -> void:
 		var projected := direction_to_dock(dock)
 		var arrows := ["→", "↘", "↓", "↙", "←", "↖", "↑", "↗"]
 		var arrow: String = arrows[posmod(roundi(projected.angle() / (PI / 4)), 8)]
-		hud.set_sailing_status("%s  Причал · %d м" % [arrow, roundi(_dock_distance(dock))])
+		var north := camera.unproject_position(player.global_position + Vector3.FORWARD * 5) - camera.unproject_position(player.global_position)
+		var north_arrow: String = arrows[posmod(roundi(north.angle() / (PI / 4)), 8)]
+		hud.set_sailing_status("%s  Причал · %d м   %s Север" % [arrow, roundi(_dock_distance(dock)), north_arrow])
 	if not anchored:
 		hud.show_sailing_hint(session.blocked)
 

@@ -21,6 +21,7 @@ const BOAT: BoatStats = preload("res://data/boats/explorer.tres")
 const BIOMES: BiomeCatalog = preload("res://data/biome_catalog.tres")
 const LANDMARKS: LandmarkCatalog = preload("res://data/landmark_catalog.tres")
 const MEALS: MealCatalog = preload("res://data/meal_catalog.tres")
+const MESSAGES: DriftMessageCatalog = preload("res://data/drift_messages.tres")
 
 var catalog: FishCatalog = CATALOG
 var gear_catalog: GearCatalog = GEAR_CATALOG
@@ -39,6 +40,7 @@ var orders := OrderBook.new(CATALOG)
 var claimed_goals: Array[String] = []
 var visited_biomes: Array[String] = ["home_lake"]
 var discovered_landmarks: Array[String] = []
+var found_messages: Array[String] = []
 var sales := 0
 var bait_charges := 0
 var bait_enabled := false
@@ -307,6 +309,7 @@ func discover_landmark(id: StringName) -> bool:
 
 func journey_progress(metric: String) -> int:
 	match metric:
+		"messages": return found_messages.size()
 		"meals": return meals_cooked
 		"landmarks": return discovered_landmarks.size()
 		"sales": return sales
@@ -327,6 +330,16 @@ func journey_progress(metric: String) -> int:
 			"fjord_species": count += 1 if &"fjord" in fish.habitats else 0
 			"trophies": count += 1 if is_trophy(fish, float(entry["best_kg"])) else 0
 	return count
+
+
+func discover_message(id: StringName) -> bool:
+	if MESSAGES.get_message(id) == null or String(id) in found_messages:
+		return false
+	found_messages.append(String(id))
+	_claim_goals()
+	_save()
+	journey_changed.emit()
+	return true
 
 
 func next_goal() -> Dictionary:
@@ -369,6 +382,7 @@ func _save() -> void:
 		"claimed_goals": claimed_goals,
 		"visited_biomes": visited_biomes,
 		"discovered_landmarks": discovered_landmarks,
+		"found_messages": found_messages,
 		"sales": sales,
 		"bait_charges": bait_charges,
 		"bait_enabled": bait_enabled,
@@ -395,6 +409,11 @@ func _load() -> void:
 		if LANDMARKS.get_landmark(StringName(str(id))) and str(id) not in discovered_landmarks:
 			discovered_landmarks.append(str(id))
 	sales = int(data.get("sales", 0))
+	# До v8 писем не было. Награда и флажок выводятся только из известных id.
+	found_messages.clear()
+	for id in data.get("found_messages", []):
+		if MESSAGES.get_message(StringName(str(id))) and str(id) not in found_messages:
+			found_messages.append(str(id))
 	bait_charges = maxi(0, int(data.get("bait_charges", 0)))
 	bait_enabled = bool(data.get("bait_enabled", false)) and bait_charges > 0
 	boat_upgraded = bool(data.get("boat_upgraded", false))

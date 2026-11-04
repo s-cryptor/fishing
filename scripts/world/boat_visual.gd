@@ -5,6 +5,7 @@ extends Node3D
 var _origin: Vector3
 var _rig: Node3D
 var _time := 0.0
+var _pennant: Node3D
 
 
 func _ready() -> void:
@@ -20,11 +21,29 @@ func _ready() -> void:
 	lantern.set_script(preload("res://scripts/world/harbor_lantern.gd"))
 	add_child(lantern)
 	GameState.supplies_changed.connect(_refresh)
+	GameState.journey_changed.connect(_refresh)
+	_pennant = _build_pennant()
 	_refresh()
 
 
 func _refresh() -> void:
 	_rig.visible = GameState.boat_upgraded
+	_pennant.visible = GameState.found_messages.size() == GameState.MESSAGES.messages.size()
+
+
+func _build_pennant() -> Node3D:
+	var pennant := Node3D.new()
+	pennant.name = "HomePennant"
+	pennant.add_to_group(&"boat_pennant")
+	add_child(pennant)
+	var art := ArtMesh.new()
+	var foot := Vector3(0.58, 0.27, 1.28)
+	art.tube(foot, foot + Vector3.UP * 1.55, 0.025, Color("#8f7152"), 0.02, 6)
+	var top := foot + Vector3.UP * 1.45
+	art.triangle(top, top + Vector3(0.18, -0.24, 0.85), top + Vector3(0, -0.24, 0), Color("#d7b76e"))
+	art.triangle(top + Vector3(0, -0.24, 0), top + Vector3(0.18, -0.24, 0.85), top + Vector3(0, -0.48, 0), Color("#527c69"))
+	art.instance(pennant, "GreenAndGoldPennant")
+	return pennant
 
 
 func _process(delta: float) -> void:

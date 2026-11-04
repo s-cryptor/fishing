@@ -3,6 +3,7 @@ extends CanvasLayer
 
 var _overlay: Control
 var _resume: Button
+var _backup_button: Button
 
 
 func _ready() -> void:
@@ -24,7 +25,7 @@ func _ready() -> void:
 	panel.custom_minimum_size = Vector2(600, 0)
 	center.add_child(panel)
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 14)
+	box.add_theme_constant_override("separation", 12)
 	panel.add_child(box)
 	var title := Label.new()
 	title.text = "Тихая гавань · Пауза"
@@ -56,12 +57,21 @@ func _ready() -> void:
 		"Esc / Start — пауза", "",
 		"ПКМ / Q,R — поворот · колесо / +,− — масштаб",
 		"Правый стик / два пальца — поворот и масштаб",
-		"Home / R3 — исходный вид", "",
-		"Марта готовит бонусы из обычного улова.",
-		"Прогресс сохраняется после улова и покупок.",
+		"Home / R3 — исходный вид",
 	])
 	help.add_theme_font_size_override("font_size", 17)
 	box.add_child(help)
+	_backup_button = Button.new()
+	_backup_button.name = "ExportProgressButton"
+	_backup_button.text = _export_caption()
+	_backup_button.add_theme_font_size_override("font_size", 18)
+	_backup_button.tooltip_text = "Только локальный JSON. Прогресс не меняется и не отправляется на сервер."
+	_backup_button.pressed.connect(_export_progress)
+	box.add_child(_backup_button)
+	var backup_note := Label.new()
+	backup_note.text = "JSON для копии и поддержки. Импорт из меню пока недоступен."
+	backup_note.add_theme_font_size_override("font_size", 14)
+	box.add_child(backup_note)
 	_overlay.hide()
 	# На мобильном кнопка остаётся доступной без клавиатуры.
 	var button := Button.new()
@@ -81,6 +91,34 @@ func _ready() -> void:
 	move_child(_overlay, -1)
 
 
+func _export_caption() -> String:
+	return "Скачать прогресс (JSON)" if OS.has_feature("web") else "Скопировать прогресс (JSON)"
+
+
+func _export_progress() -> void:
+	# Вызов остаётся синхронным внутри нажатия: браузеру нужен жест пользователя.
+	var text := GameState.export_save_text()
+	if text.is_empty():
+		_backup_button.text = "Нет доступного сохранения для экспорта"
+		return
+	if OS.has_feature("web"):
+		if not Engine.has_singleton("JavaScriptBridge"):
+			_backup_button.text = "Экспорт недоступен в этой сборке"
+			return
+		var bridge := Engine.get_singleton("JavaScriptBridge")
+		if not bridge.has_method("download_buffer"):
+			_backup_button.text = "Экспорт недоступен в этой сборке"
+			return
+		bridge.call("download_buffer", text.to_utf8_buffer(), "quiet-harbor-progress.json", "application/json")
+		# У API нет подтверждения записи файла: браузер вправе заблокировать скачивание.
+		_backup_button.text = "Запрос на скачивание передан браузеру"
+	elif DisplayServer.get_name() != "headless" and DisplayServer.has_feature(DisplayServer.FEATURE_CLIPBOARD):
+		DisplayServer.clipboard_set(text)
+		_backup_button.text = "Прогресс скопирован" if DisplayServer.clipboard_get() == text else "Не удалось скопировать прогресс"
+	else:
+		_backup_button.text = "Буфер обмена недоступен"
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"pause") and not event.is_echo():
 		toggle()
@@ -92,6 +130,7 @@ func toggle() -> void:
 	get_tree().paused = paused
 	_overlay.visible = paused
 	if paused:
+		_backup_button.text = _export_caption()
 		Sfx.set_reel(false)
 		_resume.grab_focus()
 	else:

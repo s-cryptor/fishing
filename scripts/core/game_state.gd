@@ -407,7 +407,26 @@ func equip_gear(rod: GearStats) -> void:
 
 
 func _save() -> void:
-	var saved := _store.save_data({
+	var saved := _store.save_data(_snapshot())
+	if not saved:
+		save_failed.emit(_store.last_error)
+
+
+## Копия текущего прогресса без записи и выдачи наград. Работает и после сбоя записи.
+func export_save_text() -> String:
+	var future := _store.future_save_text()
+	if not future.is_empty():
+		return future
+	if progress_read_only:
+		# Защищённый оригинал исчез: не выдаём пустую стартовую игру за его копию.
+		return ""
+	var snapshot := _snapshot()
+	snapshot["version"] = SaveStore.VERSION
+	return JSON.stringify(snapshot, "\t")
+
+
+func _snapshot() -> Dictionary:
+	return {
 		"money": money,
 		"inventory": inventory,
 		"collection": collection,
@@ -426,9 +445,7 @@ func _save() -> void:
 		"meal_charges": meal_charges,
 		"meals_cooked": meals_cooked,
 		"fishing_target": {"fish_id": fishing_target_id, "trophy": fishing_target_trophy},
-	})
-	if not saved:
-		save_failed.emit(_store.last_error)
+	}
 
 
 func _load() -> void:

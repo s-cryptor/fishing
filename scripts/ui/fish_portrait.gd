@@ -6,6 +6,14 @@ var fish: FishData
 var discovered := true
 var _time := 0.0
 var _box: StyleBoxFlat
+static var _portraits: Dictionary = {}
+
+
+static func portrait_for(id: StringName) -> Texture2D:
+	if not _portraits.has(id):
+		var path := "res://assets/portraits/fish/%s.png" % id
+		_portraits[id] = load(path) as Texture2D if ResourceLoader.exists(path) else null
+	return _portraits[id] as Texture2D
 
 
 func _process(delta: float) -> void:
@@ -19,6 +27,17 @@ func _draw() -> void:
 	if fish == null:
 		return
 	draw_style_box(_background(), Rect2(Vector2.ZERO, size))
+	if discovered:
+		var portrait := portrait_for(fish.id)
+		if portrait:
+			var factor := minf(maxf(0.0, size.x - 8.0) / portrait.get_width(), maxf(0.0, size.y - 6.0) / portrait.get_height())
+			var target := portrait.get_size() * factor
+			var offset := (size - target) * 0.5 + Vector2(0, sin(_time * 1.8) * 1.5)
+			draw_set_transform(size * Vector2(0.5, 0.75), 0.0, Vector2(size.x * 0.33, maxf(1.0, size.y * 0.05)))
+			draw_circle(Vector2.ZERO, 1.0, Color(0.025, 0.07, 0.065, 0.2))
+			draw_set_transform(Vector2.ZERO)
+			draw_texture_rect(portrait, Rect2(offset, target), false)
+			return
 	var center := size * Vector2(0.48, 0.52) + Vector2(0, sin(_time * 1.8) * 2.0)
 	var length := minf(size.x * 0.55, size.y * 1.8)
 	var slender := fish.id in [&"pike", &"barramundi", &"sawfish", &"catfish", &"atlantic_salmon", &"arctic_char"]

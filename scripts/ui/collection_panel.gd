@@ -36,10 +36,29 @@ func _ready() -> void:
 		button.toggle_mode = true
 		button.button_group = group
 		button.button_pressed = pair[1] == _habitat
+		_style_tab(button)
+		button.toggled.connect(func(_pressed: bool) -> void: _tab_colors(button))
 		button.pressed.connect(func() -> void:
 			_habitat = pair[1]
 			_rebuild())
 		tabs.add_child(button)
+
+
+func _style_tab(button: Button) -> void:
+	var normal := get_theme_stylebox("normal", "Button").duplicate() as StyleBoxFlat
+	normal.bg_color = Color("#31564b")
+	var hover := get_theme_stylebox("hover", "Button").duplicate() as StyleBoxFlat
+	hover.bg_color = Color("#3c6053")
+	button.add_theme_stylebox_override("normal", normal)
+	button.add_theme_stylebox_override("hover", hover)
+	button.add_theme_color_override("font_pressed_color", Color("#21473f"))
+	_tab_colors(button)
+
+
+func _tab_colors(button: Button) -> void:
+	var color := Color("#21473f") if button.button_pressed else Color("#dce6ce")
+	for state in ["font_color", "font_hover_color", "font_focus_color"]:
+		button.add_theme_color_override(state, color)
 
 
 func toggle() -> void:
@@ -52,7 +71,7 @@ func toggle() -> void:
 
 func _rebuild() -> void:
 	ModalFocus.restore.call_deferred(self)
-	_grid.columns = 4
+	_grid.columns = 3
 	for child in _grid.get_children():
 		_grid.remove_child(child)
 		child.queue_free()
@@ -81,6 +100,7 @@ func _rebuild_journey() -> void:
 	for goal in GameState.JOURNEY.goals:
 		var box := VBoxContainer.new()
 		box.custom_minimum_size = Vector2(190, 0)
+		box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		var title := Label.new()
 		var done: bool = goal["id"] in GameState.claimed_goals
 		title.text = goal["title"]
@@ -155,9 +175,12 @@ func _make_card(fish: FishData, entry: Dictionary) -> Control:
 	var caught := not entry.is_empty()
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = Vector2(190, 250)
+	panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	var background := StyleBoxFlat.new()
 	background.bg_color = Color("#20443e") if caught else Color("#193a35")
 	background.set_corner_radius_all(10)
+	background.set_border_width_all(1)
+	background.border_color = fish.rarity_color().darkened(0.45) if caught else Color(0.42, 0.55, 0.46, 0.2)
 	background.content_margin_left = 10
 	background.content_margin_right = 10
 	background.content_margin_top = 10

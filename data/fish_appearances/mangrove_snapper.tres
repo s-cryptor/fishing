@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FishAppearance" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/fish_appearance.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/quaternius/Fish1.fbx" id="2"]
+
+[resource]
+script = ExtResource("1")
+fish_id = &"mangrove_snapper"
+scene = ExtResource("2")
+orientation = Vector3(0, 1.5707963, 0)
+length = 3.1
+eye_anchor = Vector3(1.05, 0.08, 0.26)
+animation_name = &"Armature|Swim"
+tint = Color(0.95, 0.88, 0.8, 1)
+head_bone = &"Face"

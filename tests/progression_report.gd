@@ -58,8 +58,8 @@ func _run() -> void:
 				elapsed += 20.0
 			if state.bait_charges == 0 and state.money > 80 and state.owned_gear.size() >= 2:
 				state.buy_bait()
-		print("seed=%d: улов %d/%d · видов %d/13 · монет %d · открытия (сек): %s" % [
-				seed_value, catches, casts, state.collection.size(), state.money, str(unlocks)])
+		print("seed=%d: улов %d/%d · видов %d/%d · монет %d · открытия (сек): %s" % [
+				seed_value, catches, casts, state.collection.size(), state.catalog.fish.size(), state.money, str(unlocks)])
 	quit()
 
 

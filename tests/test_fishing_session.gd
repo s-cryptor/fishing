@@ -32,9 +32,9 @@ func _initialize() -> void:
 
 
 func test_catalog_loaded() -> void:
-	_check(CATALOG.fish.size() == 13, "в каталоге 13 видов")
+	_check(CATALOG.fish.size() == 14, "в каталоге 14 видов")
 	_check(CATALOG.for_habitat(&"lake").size() == 6, "все виды водятся в озере")
-	_check(CATALOG.for_habitat(&"mangrove").size() == 4, "в манграх 4 новых вида")
+	_check(CATALOG.for_habitat(&"mangrove").size() == 5, "в манграх 5 видов")
 	_check(CATALOG.for_habitat(&"fjord").size() == 3, "во фьорде 3 вида")
 
 

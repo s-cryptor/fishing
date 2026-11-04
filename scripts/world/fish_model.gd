@@ -1,11 +1,18 @@
 class_name FishModel
 extends Node3D
-## Собственные объёмные трофеи: силуэт, плавники и приметы каждого вида.
+## Объёмные трофеи: собственная геометрия и изолированные импортированные риги.
+
+static var _appearances: FishAppearanceCatalog
 
 var _tail: Node3D
 var _time := 0.0
 var _pectoral: Array[Node3D] = []
 var _body: MeshInstance3D
+var _swim_clip: StringName
+
+
+func _ready() -> void:
+	_play_imported()
 
 
 func build(fish: FishData) -> void:
@@ -16,7 +23,11 @@ func build(fish: FishData) -> void:
 	_tail = null
 	_body = null
 	_time = 0.0
+	_swim_clip = &""
 	if fish == null:
+		return
+	var appearance := appearance_for(fish.id)
+	if appearance and _build_imported(appearance):
 		return
 	var art := ArtMesh.new()
 	var base := fish.color
@@ -146,6 +157,125 @@ func build(fish: FishData) -> void:
 	skin.metallic = 0.18 if fish.id == &"golden_carp" else 0.05
 	for mesh in find_children("*", "MeshInstance3D", true, false):
 		(mesh as MeshInstance3D).material_override = skin
+
+
+static func appearance_for(id: StringName) -> FishAppearance:
+	# FBX должен сначала пройти импорт: не загружаем его при регистрации класса.
+	if _appearances == null:
+		_appearances = load("res://data/fish_appearance_catalog.tres") as FishAppearanceCatalog
+	return _appearances.get_appearance(id) if _appearances else null
+
+
+func presentation_center() -> Vector3:
+	if has_node("ImportedRig"):
+		return Vector3.ZERO
+	var bounds := AABB()
+	var found := false
+	for mesh: MeshInstance3D in find_children("*", "MeshInstance3D", true, false):
+		var box := _relative_transform(mesh) * mesh.get_aabb()
+		bounds = bounds.merge(box) if found else box
+		found = true
+	return bounds.get_center() if found else Vector3.ZERO
+
+
+func _build_imported(appearance: FishAppearance) -> bool:
+	if appearance.scene == null:
+		return false
+	var node := appearance.scene.instantiate()
+	var instance := node as Node3D
+	if instance == null:
+		node.free()
+		return false
+	var holder := Node3D.new()
+	holder.name = "ImportedRig"
+	add_child(holder)
+	var pose := Node3D.new()
+	pose.rotation = appearance.orientation
+	holder.add_child(pose)
+	pose.add_child(instance)
+	var bounds := AABB()
+	var found := false
+	var meshes := instance.find_children("*", "MeshInstance3D", true, false)
+	if instance is MeshInstance3D:
+		meshes.append(instance)
+	for mesh: MeshInstance3D in meshes:
+		# Собственная копия меша владеет оттенёнными материалами. Surface overrides
+		# у импортированного скин-меша ломают удаление в headless dummy renderer.
+		mesh.mesh = mesh.mesh.duplicate() as Mesh
+		for surface in mesh.mesh.get_surface_count():
+			var material := mesh.mesh.surface_get_material(surface) as StandardMaterial3D
+			if material:
+				var local := material.duplicate() as StandardMaterial3D
+				local.albedo_color *= appearance.tint
+				local.roughness = 0.7
+				mesh.mesh.surface_set_material(surface, local)
+		# build() вызывается и до входа в дерево: global_transform здесь недоступен.
+		var relative := _relative_transform(mesh)
+		var box := relative * mesh.get_aabb()
+		bounds = bounds.merge(box) if found else box
+		found = true
+	var extent := maxf(bounds.size.x, maxf(bounds.size.y, bounds.size.z))
+	if not found or not bounds.size.is_finite() or extent <= 0.00001:
+		remove_child(holder)
+		holder.queue_free()
+		return false
+	var factor := clampf(appearance.length, 0.5, 5.0) / extent
+	holder.scale = Vector3.ONE * factor
+	holder.position = -bounds.get_center() * factor
+	# Сохраняем исходные FBX-преобразования и добавляем лицо в общем стиле игры.
+	var eyes := ArtMesh.new()
+	for side in [-1, 1]:
+		var anchor := appearance.eye_anchor * Vector3(1, 1, side)
+		eyes.pebble(anchor, Vector3(0.085, 0.09, 0.035), Color("#eee0ad"))
+		eyes.pebble(anchor + Vector3(0.012, 0, side * 0.027), Vector3(0.048, 0.055, 0.014), Color("#183a38"))
+		eyes.pebble(anchor + Vector3(0.025, 0.025, side * 0.04), Vector3.ONE * 0.015, Color("#fff5dc"))
+	var face_parent: Node3D = self
+	var face_transform := Transform3D.IDENTITY
+	var skeletons := instance.find_children("*", "Skeleton3D", true, false)
+	if not appearance.head_bone.is_empty() and not skeletons.is_empty():
+		var skeleton := skeletons[0] as Skeleton3D
+		var index := skeleton.find_bone(appearance.head_bone)
+		if index >= 0:
+			face_transform = (_relative_transform(skeleton) * skeleton.get_bone_global_rest(index)).affine_inverse()
+			var attachment := BoneAttachment3D.new()
+			attachment.name = "FaceAttachment"
+			skeleton.add_child(attachment)
+			attachment.bone_name = appearance.head_bone
+			face_parent = attachment
+	var face := eyes.instance(face_parent, "FaceDetails")
+	face.transform = face_transform
+	_swim_clip = appearance.animation_name
+	if is_node_ready():
+		_play_imported()
+	return true
+
+
+func _relative_transform(node: Node3D) -> Transform3D:
+	var relative := node.transform
+	var ancestor := node.get_parent()
+	while ancestor != self and ancestor != null:
+		if ancestor is Node3D:
+			relative = ancestor.transform * relative
+		ancestor = ancestor.get_parent()
+	return relative
+
+
+func _play_imported() -> void:
+	for player: AnimationPlayer in find_children("*", "AnimationPlayer", true, false):
+		# Режим повтора меняется на локальной копии, не в ресурсе исходного ассета.
+		for library_name in player.get_animation_library_list():
+			var library := player.get_animation_library(library_name).duplicate(true) as AnimationLibrary
+			player.remove_animation_library(library_name)
+			player.add_animation_library(library_name, library)
+		var clip := _swim_clip
+		if not player.has_animation(clip):
+			for name in player.get_animation_list():
+				if name != &"RESET":
+					clip = name
+					break
+		if player.has_animation(clip):
+			player.get_animation(clip).loop_mode = Animation.LOOP_LINEAR
+			player.play(clip)
 
 
 static func _profile_for(id: StringName) -> Array[Vector2]:

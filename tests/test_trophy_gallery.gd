@@ -35,7 +35,7 @@ func _run() -> void:
 	await process_frame
 	_check(popup.visible and not collection.visible and hud.is_modal_open(), "карточка рекорда заменяет коллекцию без наложения окон")
 	_check(popup.get_node("VBox/Stats").text.contains("0.40") and popup.get_node("VBox/Stats").text.contains("3"), "в карточке показаны сохранённые рекорд и количество")
-	_check(not popup.get_node("VBox/Description").text.contains("Нельзя выдавать повторно"), "просмотр не использует награды от последней поимки")
+	_check(not popup.get_node("VBox/DescriptionScroll/Description").text.contains("Нельзя выдавать повторно"), "просмотр не использует награды от последней поимки")
 	_check(controller.phase == 0, "просмотр трофея не переводит рыбалку в фазу результата")
 	hud._open_shop()
 	_check(not hud.get_node("Root/ShopPanel").visible, "магазин не перекрывает просмотр трофея")

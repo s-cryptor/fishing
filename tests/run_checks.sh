@@ -22,6 +22,7 @@ run_check --headless --path . -s res://tests/test_fishing_spots.gd -- --save=use
 run_check --headless --path . -s res://tests/test_trophy_gallery.gd -- --save=user://gallery-test.json --mute
 run_check --headless --path . -s res://tests/test_fish_art.gd -- --save=user://fish-art-test.json --mute
 run_check --headless --path . -s res://tests/test_imported_fish.gd -- --save=user://imported-fish-test.json --mute
+run_check --headless --path . -s res://tests/test_fishing_targets.gd -- --save=user://targets-test.json --mute
 run_check --headless --path . -s res://tests/test_fishing_feedback.gd -- --save=user://feedback-test.json --mute
 run_check --headless --path . -s res://tests/test_discoveries.gd -- --save=user://discoveries-test.json --mute
 run_check --headless --path . -s res://tests/test_cast_aiming.gd -- --save=user://aiming-test.json --mute

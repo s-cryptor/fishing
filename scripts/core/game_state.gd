@@ -12,6 +12,7 @@ signal journey_changed
 signal milestone_reached(title: String, reward: int)
 signal supplies_changed
 signal save_failed(message: String)
+signal fishing_target_changed
 
 const CATALOG: FishCatalog = preload("res://data/fish_catalog.tres")
 const GEAR_CATALOG: GearCatalog = preload("res://data/gear_catalog.tres")
@@ -52,6 +53,8 @@ var meals_cooked := 0
 var last_catch_report: Dictionary = {}
 var save_recovery_notice := ""
 var progress_read_only := false
+var fishing_target_id := ""
+var fishing_target_trophy := false
 
 var _store := SaveStore.new(DebugTools.save_path if DebugTools.save_path else "user://save.json")
 
@@ -77,7 +80,14 @@ func register_catch(fish: FishData, weight_kg: float) -> bool:
 	last_catch_report = {"record": not is_new and weight_kg > old_best,
 		"previous_best": old_best, "trophy": is_trophy(fish, weight_kg), "rewards": []}
 	last_catch_report["rewards"] = _claim_goals()
+	var target_completed := fishing_target_id == key and (not fishing_target_trophy or is_trophy(fish, weight_kg))
+	if target_completed:
+		last_catch_report["target_completed"] = "%s: %s" % ["Золотой трофей" if fishing_target_trophy else "Найден новый вид", fish.display_name]
+		fishing_target_id = ""
+		fishing_target_trophy = false
 	_save()
+	if target_completed:
+		fishing_target_changed.emit()
 	inventory_changed.emit()
 	orders_changed.emit()
 	for order in completed:
@@ -86,6 +96,30 @@ func register_catch(fish: FishData, weight_kg: float) -> bool:
 		money_changed.emit(money)
 	journey_changed.emit()
 	return is_new
+
+
+func tracked_fish() -> FishData:
+	return catalog.get_fish(StringName(fishing_target_id))
+
+
+## Неизвестный вид — первая поимка; открытый — новый экземпляр трофейного веса.
+func track_fish(id: StringName) -> bool:
+	if catalog.get_fish(id) == null or fishing_target_id == String(id):
+		return false
+	fishing_target_id = String(id)
+	fishing_target_trophy = collection.has(fishing_target_id)
+	_save()
+	fishing_target_changed.emit()
+	return true
+
+
+func clear_fishing_target() -> void:
+	if fishing_target_id.is_empty():
+		return
+	fishing_target_id = ""
+	fishing_target_trophy = false
+	_save()
+	fishing_target_changed.emit()
 
 
 func inventory_value() -> int:
@@ -391,6 +425,7 @@ func _save() -> void:
 		"active_meal_id": active_meal_id,
 		"meal_charges": meal_charges,
 		"meals_cooked": meals_cooked,
+		"fishing_target": {"fish_id": fishing_target_id, "trophy": fishing_target_trophy},
 	})
 	if not saved:
 		save_failed.emit(_store.last_error)
@@ -407,6 +442,15 @@ func _load() -> void:
 	money = int(data.get("money", 0))
 	inventory.assign(data.get("inventory", []))
 	collection = data.get("collection", {})
+	# До v10 личных целей не было. Повреждённая цель не препятствует загрузке прогресса.
+	fishing_target_id = ""
+	fishing_target_trophy = false
+	var target: Variant = data.get("fishing_target", {})
+	if target is Dictionary and target.get("fish_id", "") is String and target.get("trophy", false) is bool:
+		var id := StringName(target.get("fish_id", ""))
+		if catalog.get_fish(id):
+			fishing_target_id = String(id)
+			fishing_target_trophy = target.get("trophy", false)
 	claimed_goals.assign(data.get("claimed_goals", []))
 	visited_biomes.assign(data.get("visited_biomes", ["home_lake"]))
 	# До v6 открытий не было. Неизвестные и повторные записи не дают прогресс.

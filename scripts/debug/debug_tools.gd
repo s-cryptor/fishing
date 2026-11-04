@@ -24,6 +24,7 @@ extends Node
 ##   --aim-spot          разместить стаю в точке заброса 95% для проверки точности
 ##   --gallery           демо-коллекция (только с отдельным --save)
 ##   --inspect=FISH_ID    открыть трофей из коллекции (совместимо с --gallery)
+##   --target=FISH_ID     закрепить личную цель в отдельном --save
 ##   При --quit-after в лог печатается позиция игрока.
 
 var autoplay := false
@@ -55,6 +56,7 @@ var _showcase := ""
 var _aim_spot := false
 var _gallery := false
 var _inspect := ""
+var _target := ""
 
 
 func _init() -> void:
@@ -85,6 +87,7 @@ func _init() -> void:
 			"--aim-spot": _aim_spot = true
 			"--gallery": _gallery = true
 			"--inspect": _inspect = value
+			"--target": _target = value
 			"--action":
 				var action_time := value.split("@")
 				_scheduled_actions.append([StringName(action_time[0]), action_time[1].to_float()])
@@ -105,6 +108,8 @@ func _ready() -> void:
 
 
 func _apply_start_overrides() -> void:
+	if not _target.is_empty() and _isolated_save():
+		GameState.track_fish(StringName(_target))
 	if not _start_biome.is_empty():
 		var controller := get_tree().get_first_node_in_group(&"fishing_controller") as FishingController
 		if controller:
@@ -167,7 +172,7 @@ func _apply_start_overrides() -> void:
 						child._lifetime = 300.0
 						break
 	if _gallery:
-		if save_path.is_empty() or ProjectSettings.globalize_path(save_path).simplify_path() == ProjectSettings.globalize_path("user://save.json").simplify_path():
+		if not _isolated_save():
 			push_warning("Демо-коллекция требует отдельный --save, чтобы не менять основной прогресс")
 		else:
 			for fish in GameState.catalog.fish:
@@ -182,6 +187,10 @@ func _apply_start_overrides() -> void:
 			if not controller.hud.is_modal_open():
 				controller.hud._toggle_collection()
 			controller.hud._inspect_fish(fish)
+
+
+func _isolated_save() -> bool:
+	return not save_path.is_empty() and ProjectSettings.globalize_path(save_path).simplify_path() != ProjectSettings.globalize_path("user://save.json").simplify_path()
 
 
 func _process(delta: float) -> void:
@@ -250,7 +259,12 @@ func _set_pressed(pressed: bool) -> void:
 
 
 func _take_shot() -> void:
-	await RenderingServer.frame_post_draw
+	if DisplayServer.get_name() == "headless":
+		return
+	# У перекрытого окна macOS frame_post_draw может не прийти до конца прогона.
+	RenderingServer.force_draw(false)
 	var path := "%s/shot_%02d.png" % [_shots_dir, _shot_index]
 	_shot_index += 1
-	get_viewport().get_texture().get_image().save_png(path)
+	var error := get_viewport().get_texture().get_image().save_png(path)
+	if error != OK:
+		push_warning("Не удалось сохранить отладочный снимок: %s" % error_string(error))

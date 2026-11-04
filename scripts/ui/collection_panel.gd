@@ -16,6 +16,7 @@ var _habitat: StringName = &"lake"
 
 func _ready() -> void:
 	hide()
+	GameState.fishing_target_changed.connect(_refresh_target_buttons)
 	ModalFocus.watch(self)
 	%CloseButton.pressed.connect(hide)
 	var tabs := HBoxContainer.new()
@@ -36,6 +37,7 @@ func _ready() -> void:
 		button.toggle_mode = true
 		button.button_group = group
 		button.button_pressed = pair[1] == _habitat
+		button.set_meta(&"page", pair[1])
 		_style_tab(button)
 		button.toggled.connect(func(_pressed: bool) -> void: _tab_colors(button))
 		button.pressed.connect(func() -> void:
@@ -67,6 +69,30 @@ func toggle() -> void:
 	else:
 		_rebuild()
 		show()
+
+
+func reveal_fish(fish: FishData) -> void:
+	if fish == null or fish.habitats.is_empty():
+		return
+	if _habitat not in fish.habitats:
+		_habitat = fish.habitats[0]
+	for button: Button in $VBox.get_child(1).get_children():
+		button.button_pressed = button.get_meta(&"page") == _habitat
+	_rebuild()
+	show()
+	_focus_fish(fish.id)
+
+
+func _focus_fish(id: StringName) -> void:
+	# Контейнеру нужен кадр, чтобы вычислить положение карточек после смены вкладки.
+	await get_tree().process_frame
+	if not is_visible_in_tree():
+		return
+	for button: Button in _grid.find_children("TrackFishButton", "Button", true, false):
+		if button.get_meta(&"fish_id") == String(id):
+			button.grab_focus()
+			$VBox/Scroll.ensure_control_visible(button)
+			return
 
 
 func _rebuild() -> void:
@@ -171,6 +197,20 @@ func _journal_card(heading: String, habitat: StringName, clue: String, known: bo
 	return panel
 
 
+func _refresh_target_buttons() -> void:
+	for button: Button in _grid.find_children("TrackFishButton", "Button", true, false):
+		var id := str(button.get_meta(&"fish_id"))
+		var selected := GameState.fishing_target_id == id
+		button.text = "Снять цель" if selected else ("Искать трофей" if GameState.collection.has(id) else "Искать этот вид")
+		button.tooltip_text = "Отменить личную цель" if selected else "Закрепить биом и время клёва на экране. Шансы поимки не меняются."
+		# Рамка выделяет цель отдельно от редкости и клавиатурного фокуса.
+		var card := button.get_parent().get_parent() as PanelContainer
+		var style := card.get_theme_stylebox("panel").duplicate() as StyleBoxFlat
+		style.set_border_width_all(2 if selected else 1)
+		style.border_color = Color("#e3bc6b") if selected else button.get_meta(&"border_color")
+		card.add_theme_stylebox_override("panel", style)
+
+
 func _make_card(fish: FishData, entry: Dictionary) -> Control:
 	var caught := not entry.is_empty()
 	var panel := PanelContainer.new()
@@ -236,4 +276,20 @@ func _make_card(fish: FishData, entry: Dictionary) -> Control:
 		clue.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		clue.add_theme_font_size_override("font_size", 16)
 		box.add_child(clue)
+	var track := Button.new()
+	track.name = "TrackFishButton"
+	track.add_theme_font_size_override("font_size", 16)
+	track.set_meta(&"fish_id", String(fish.id))
+	track.set_meta(&"border_color", background.border_color)
+	track.text = "Снять цель" if GameState.fishing_target_id == String(fish.id) else ("Искать трофей" if caught else "Искать этот вид")
+	track.tooltip_text = "Закрепить личную цель на экране; шансы поимки не меняются"
+	track.pressed.connect(func() -> void:
+		if GameState.fishing_target_id == String(fish.id):
+			GameState.clear_fishing_target()
+		else:
+			GameState.track_fish(fish.id))
+	box.add_child(track)
+	if GameState.fishing_target_id == String(fish.id):
+		background.set_border_width_all(2)
+		background.border_color = Color("#e3bc6b")
 	return panel

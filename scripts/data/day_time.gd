@@ -27,6 +27,21 @@ static func flag(phase: Phase) -> int:
 	return 1 << phase
 
 
+## Сколько игровых часов до ближайшего клёва, с переходом через полночь.
+static func hours_until_active(flags: int, hour: float) -> float:
+	if flags & ALL_PHASES == 0:
+		return -1.0
+	var normalized := fposmod(hour, 24.0)
+	if flags & flag(phase_for_hour(normalized)):
+		return 0.0
+	var result := 24.0
+	var starts := [DAWN_START, DAY_START, DUSK_START, NIGHT_START]
+	for phase in Phase.values():
+		if flags & flag(phase):
+			result = minf(result, fposmod(starts[phase] - normalized, 24.0))
+	return result
+
+
 ## «Рассвет, закат» по набору флагов.
 static func describe(flags: int) -> String:
 	if flags & ALL_PHASES == ALL_PHASES:

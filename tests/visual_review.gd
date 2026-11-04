@@ -30,6 +30,8 @@ func _run() -> void:
 	root.add_child(scene)
 	var state := root.get_node("GameState")
 	state.found_messages.clear()
+	state.fishing_target_id = ""
+	state.fishing_target_trophy = false
 	state.journey_changed.emit()
 	var clock := root.get_node("WorldClock")
 	var hud: Node = scene.get_node("Hud")
@@ -95,6 +97,20 @@ func _run() -> void:
 	hud._toggle_collection()
 	var collection: Node = hud.get_node("Root/CollectionPanel")
 	await _capture("collection_unknown")
+	# Личные цели задаём напрямую: визуальная проверка не пишет демо-прогресс.
+	state.fishing_target_id = "bream"
+	state.fishing_target_changed.emit()
+	await _capture("collection_target_unknown")
+	collection.hide()
+	hud._refresh_journey()
+	await _capture("target_waiting")
+	clock.hour = 22
+	hud._refresh_journey()
+	await _capture("target_active")
+	clock.hour = 10
+	state.fishing_target_id = ""
+	state.fishing_target_changed.emit()
+	collection.show()
 	for fish in state.catalog.fish:
 		state.collection[String(fish.id)] = {"count": 7, "best_kg": lerpf(fish.min_weight_kg, fish.max_weight_kg, 0.9)}
 	var tabs: Node = collection.get_node("VBox").get_child(1)
@@ -104,6 +120,26 @@ func _run() -> void:
 		tabs.get_child(i).button_pressed = true
 		tabs.get_child(i).pressed.emit()
 		await _capture("collection_%s" % habitat)
+	collection.hide()
+	state.fishing_target_id = "golden_carp"
+	state.fishing_target_trophy = true
+	state.fishing_target_changed.emit()
+	await _capture("target_trophy")
+	state.fishing_target_id = ""
+	state.fishing_target_trophy = false
+	state.last_catch_report = {"target_completed": "Золотой трофей: Золотой карп"}
+	state.fishing_target_changed.emit()
+	hud.show_catch(state.catalog.get_fish(&"golden_carp"), 5.7, false)
+	await _capture("target_completed")
+	# Стресс раскладки: больше наград, чем выдаётся за обычный одиночный улов.
+	state.last_catch_report["rewards"] = state.JOURNEY.goals
+	hud.show_catch(state.catalog.get_fish(&"golden_carp"), 5.7, false)
+	await _capture("catch_long_report")
+	hud.get_node("Root/CatchPopup/VBox/DescriptionScroll").scroll_vertical = 100000
+	await _capture("catch_long_report_end")
+	hud.close_catch_popup()
+	state.last_catch_report = {}
+	collection.show()
 	for fish in state.catalog.fish:
 		hud._inspect_fish(fish)
 		await _capture("trophy_%s" % fish.id)

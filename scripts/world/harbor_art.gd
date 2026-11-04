@@ -36,6 +36,11 @@ func _build() -> void:
 		landmark.data = data
 		landmark.position = data.position
 		add_child(landmark)
+	for data in GameState.MESSAGES.messages:
+		var message := DriftMessage.new()
+		message.data = data
+		message.position = data.position
+		add_child(message)
 	for point in [Vector3(73, 0.5, -3), Vector3(85, 0.5, -6), Vector3(87, 0.5, 4), Vector3(76, 0.5, 6)]:
 		NatureArt.tree(self, point, true)
 		var body := StaticBody3D.new()

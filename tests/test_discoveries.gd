@@ -11,6 +11,7 @@ func _initialize() -> void:
 func _run() -> void:
 	var state := root.get_node("GameState")
 	state.discovered_landmarks.clear()
+	state.found_messages.clear()
 	state.claimed_goals.clear()
 	state.collection.clear()
 	state.inventory.clear()

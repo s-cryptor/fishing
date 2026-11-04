@@ -7,7 +7,7 @@ script = ExtResource("1")
 goals = Array[Dictionary]([{
 "id": "first_catch", "title": "Первый улов", "hint": "Повернись к воде, удерживай и отпусти кнопку рыбалки.", "metric": "catches", "target": 1, "reward": 25
 }, {
-"id": "first_sale", "title": "На новую снасть", "hint": "Продай улов кнопкой вверху экрана.", "metric": "sales", "target": 1, "reward": 25
+"id": "first_sale", "title": "На новую снасть", "hint": "Открой садок вверху экрана, выбери рыбу и подтверди продажу.", "metric": "sales", "target": 1, "reward": 25
 }, {
 "id": "three_species", "title": "Любопытный рыболов", "hint": "Поймай 3 разных вида. Время суток влияет на клёв.", "metric": "species", "target": 3, "reward": 60
 }, {
@@ -32,4 +32,8 @@ goals = Array[Dictionary]([{
 "id": "fjord_collection", "title": "Тайны холодных вод", "hint": "Открой все 3 вида Ледяного фьорда.", "metric": "fjord_species", "target": 3, "reward": 400
 }, {
 "id": "harbor_explorer", "title": "Истории трёх берегов", "hint": "Осмотри маяк, хижину лодочника и каменную арку. Записи появятся в открытиях.", "metric": "landmarks", "target": 3, "reward": 120
+}, {
+"id": "first_letter", "title": "Послание на воде", "hint": "Сядь в лодку и найди бутылку к северо-западу от причала озера. Подсказки — во вкладке «Письма».", "metric": "messages", "target": 1, "reward": 30
+}, {
+"id": "letters_home", "title": "Дорога домой", "hint": "Найди три письма в трёх водоёмах. На лодке появится флажок возвращения.", "metric": "messages", "target": 3, "reward": 90
 }])

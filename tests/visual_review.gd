@@ -27,6 +27,8 @@ func _run() -> void:
 	var scene := load("res://scenes/main.tscn").instantiate() as Node3D
 	root.add_child(scene)
 	var state := root.get_node("GameState")
+	state.found_messages.clear()
+	state.journey_changed.emit()
 	var clock := root.get_node("WorldClock")
 	var hud: Node = scene.get_node("Hud")
 	var controller: Node = scene.get_node("FishingController")
@@ -115,6 +117,70 @@ func _run() -> void:
 		await _capture("discovery_%s" % data.id)
 		hud.get_node("Root/LandmarkPopup").close()
 	collection.hide()
+	tabs.get_child(5).button_pressed = true
+	tabs.get_child(5).pressed.emit()
+	collection.show()
+	await _capture("letters_unknown")
+	collection.hide()
+	var captain: Node = scene.get_node("BoatSailing")
+	var old_boat: bool = state.boat_upgraded
+	state.boat_upgraded = true
+	state.supplies_changed.emit()
+	var routes := {&"lake": ["Lake", "HomeDock"], &"mangrove": ["MangroveWater", "MangroveDock"], &"fjord": ["FjordWater", "FjordDock"]}
+	for data in state.MESSAGES.messages:
+		var route: Array = routes[data.habitat]
+		controller.water = scene.get_node(route[0])
+		hud.set_biome(controller.water.biome)
+		var dock: Node3D = scene.get_node(route[1])
+		player.global_position = dock.to_global(Vector3(0, 0.15, 0.8))
+		captain.launch(dock)
+		var offset: Vector3 = data.position - controller.water.global_position + Vector3.RIGHT * 2.0
+		captain.session.position = Vector2(offset.x, offset.z)
+		await physics_frame
+		await physics_frame
+		camera.reset_view()
+		camera.zoom_view(-3.0)
+		camera.snap_to_target()
+		camera._process(10.0)
+		await _capture("bottle_%s" % data.id)
+		hud.show_message(data, true)
+		await _capture("letter_%s" % data.id)
+		hud.get_node("Root/LandmarkPopup").close()
+		captain._land(dock)
+		await physics_frame
+	for data in state.MESSAGES.messages:
+		state.found_messages.append(String(data.id))
+	state.journey_changed.emit()
+	collection._rebuild()
+	collection.show()
+	await _capture("letters_complete")
+	hud._inspect_message_entry(state.MESSAGES.messages[2])
+	await create_timer(0.1).timeout
+	hud.get_node("Root/LandmarkPopup")._scroll.scroll_vertical = 100000
+	await _capture("letters_final_page")
+	hud.get_node("Root/LandmarkPopup").close()
+	collection.hide()
+	controller.water = scene.get_node("Lake")
+	hud.set_biome(controller.water.biome)
+	var home_dock: Node3D = scene.get_node("HomeDock")
+	player.global_position = home_dock.to_global(Vector3(0, 0.15, 0.8))
+	captain.launch(home_dock)
+	captain.session.position = Vector2(-7, -22)
+	await physics_frame
+	await physics_frame
+	camera.reset_view()
+	camera.turn_view(-PI * 0.25)
+	camera.zoom_view(-6.0)
+	camera.snap_to_target()
+	camera._process(10.0)
+	await _capture("boat_home_pennant")
+	captain._land(home_dock)
+	state.boat_upgraded = old_boat
+	state.supplies_changed.emit()
+	player.position = Vector3(0, 0.6, -3)
+	camera.reset_view()
+	camera.snap_to_target()
+	camera._process(10.0)
 	state.inventory.clear()
 	state.active_meal_id = ""
 	state.meal_charges = 0

@@ -16,6 +16,7 @@ func _run() -> void:
 	state.inventory.clear()
 	state.claimed_goals.clear()
 	state.discovered_landmarks.clear()
+	state.found_messages.clear()
 	state.active_meal_id = ""
 	state.meal_charges = 0
 	state.meals_cooked = 0

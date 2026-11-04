@@ -407,24 +407,9 @@ func update_fight(session: FishingSession) -> void:
 	%FightReadout.session = session
 	%FightReadout.to_boat = _sailing_active
 	%FightReadout.queue_redraw()
-	var status := "Подматывай · светлая зона даёт бонус контроля"
-	var color := Color("#ede6cc")
-	if session.tension >= TensionMeter.DANGER_FROM:
-		status = "ОТПУСТИ · леска на пределе!"
-		color = Color("#edaa8e")
-	elif session.tension <= FishingSession.SLACK_TENSION:
-		status = "ПОДМАТЫВАЙ · не дай леске провиснуть"
-	elif session.is_thrashing:
-		status = "РЫВОК · дай рыбе выдохнуться"
-		color = Color("#edc684")
-	elif session.is_telegraphing():
-		status = "Готовится рывок · будь готов отпустить"
-		color = Color("#edc684")
-	elif session.control >= 0.8:
-		status = "ХОРОШИЙ КОНТРОЛЬ · подмотка +%d%%" % roundi(session.control * FishingSession.CONTROL_REEL_BONUS * 100)
-		color = Color("#cadd9e")
-	_fight_status.text = status
-	_fight_status.modulate = color
+	var feedback := FishingFeedback.fight(session)
+	_fight_status.text = feedback["status"]
+	_fight_status.modulate = feedback["color"]
 
 
 func show_catch(fish: FishData, weight_kg: float, is_new: bool) -> void:

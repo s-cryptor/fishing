@@ -98,6 +98,20 @@ func _read_dictionary(file_path: String) -> Variant:
 	return parser.data
 
 
+## Экспорт не должен терять неизвестные поля и точность чисел будущей схемы.
+## Не меняем last_error/recovered_from: это чтение, а не повторная загрузка игры.
+func future_save_text() -> String:
+	if path.is_empty():
+		return ""
+	for candidate in [path, path + ".tmp", path + ".bak"]:
+		if not FileAccess.file_exists(candidate):
+			continue
+		var data: Variant = _read_dictionary(candidate)
+		if data is Dictionary and _version(data) > VERSION:
+			return FileAccess.get_file_as_string(candidate)
+	return ""
+
+
 func _unused_archive_path() -> String:
 	var result := path + ".corrupt"
 	var index := 0

@@ -10,6 +10,7 @@ signal closed
 @onready var _rarity: Label = %Rarity
 @onready var _stats: Label = %Stats
 @onready var _description: Label = %Description
+@onready var _scroll: ScrollContainer = %DescriptionScroll
 var _open_tween: Tween
 
 
@@ -17,8 +18,31 @@ func _ready() -> void:
 	hide()
 	ModalFocus.watch(self, &"TakeButton")
 	%TakeButton.pressed.connect(close)
-	%TakeButton.focus_neighbor_top = %TakeButton.get_path_to(_swatch)
-	_swatch.focus_neighbor_bottom = _swatch.get_path_to(%TakeButton)
+	%TakeButton.focus_neighbor_top = %TakeButton.get_path_to(_scroll)
+	_swatch.focus_neighbor_bottom = _swatch.get_path_to(_scroll)
+	_scroll.focus_neighbor_top = _scroll.get_path_to(_swatch)
+	_scroll.focus_neighbor_bottom = _scroll.get_path_to(%TakeButton)
+	_scroll.focus_next = _scroll.get_path_to(%TakeButton)
+	_scroll.gui_input.connect(_on_reader_input)
+
+
+func _on_reader_input(event: InputEvent) -> void:
+	if event.is_action_pressed(&"ui_down") or event.is_action_pressed(&"ui_page_down"):
+		var bar := _scroll.get_v_scroll_bar()
+		if _scroll.scroll_vertical >= bar.max_value - bar.page - 1:
+			%TakeButton.grab_focus()
+		else:
+			_scroll.scroll_vertical += roundi(_scroll.size.y * 0.8) if event.is_action_pressed(&"ui_page_down") else 42
+		_scroll.accept_event()
+	elif event.is_action_pressed(&"ui_up") or event.is_action_pressed(&"ui_page_up"):
+		if _scroll.scroll_vertical == 0:
+			_swatch.grab_focus()
+		else:
+			_scroll.scroll_vertical -= roundi(_scroll.size.y * 0.8) if event.is_action_pressed(&"ui_page_up") else 42
+		_scroll.accept_event()
+	elif event.is_action_pressed(&"ui_accept"):
+		%TakeButton.grab_focus()
+		_scroll.accept_event()
 
 
 func open(fish: FishData, weight_kg: float, is_new: bool) -> void:
@@ -35,6 +59,8 @@ func open(fish: FishData, weight_kg: float, is_new: bool) -> void:
 	_rarity.modulate = fish.rarity_color()
 	_stats.text = "%.2f кг  ·  цена %d" % [weight_kg, fish.value_for(weight_kg)]
 	_description.text = fish.description
+	if report.has("target_completed"):
+		_description.text += "\nЦель выполнена! %s" % report["target_completed"]
 	if report.get("record", false):
 		_description.text += "\nПрежний рекорд: %.2f кг" % float(report["previous_best"])
 	for goal in report.get("rewards", []):
@@ -59,6 +85,7 @@ func inspect(fish: FishData, entry: Dictionary) -> void:
 func _animate_open() -> void:
 	if _open_tween:
 		_open_tween.kill()
+	_scroll.scroll_vertical = 0
 	show()
 	pivot_offset = size / 2.0
 	scale = Vector2.ONE * 0.8

@@ -450,9 +450,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -240.0
-offset_top = -200.0
+offset_top = -290.0
 offset_right = 240.0
-offset_bottom = 200.0
+offset_bottom = 290.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("6_popup")
@@ -491,10 +491,19 @@ unique_name_in_owner = true
 layout_mode = 2
 horizontal_alignment = 1
 
-[node name="Description" type="Label" parent="Root/CatchPopup/VBox"]
+[node name="DescriptionScroll" type="ScrollContainer" parent="Root/CatchPopup/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(420, 0)
+custom_minimum_size = Vector2(420, 96)
 layout_mode = 2
+size_flags_vertical = 3
+focus_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="Description" type="Label" parent="Root/CatchPopup/VBox/DescriptionScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
 theme_override_font_sizes/font_size = 18
 horizontal_alignment = 1
 autowrap_mode = 3

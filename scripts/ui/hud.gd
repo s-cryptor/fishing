@@ -18,6 +18,8 @@ var _nearby_landmark: LandmarkData
 var _nearby_message: DriftMessageData
 var _hint_template := ""
 var _kitchen_available := false
+var _habitat: StringName = &"lake"
+var _target_refresh := 0.0
 
 @onready var _money_label: Label = %MoneyLabel
 @onready var _gear_label: Label = %GearLabel
@@ -84,6 +86,8 @@ func _ready() -> void:
 	GameState.inventory_changed.connect(_refresh_wallet)
 	GameState.gear_changed.connect(_refresh_gear)
 	GameState.journey_changed.connect(_refresh_journey)
+	GameState.fishing_target_changed.connect(_refresh_journey)
+	%JourneyHint.gui_input.connect(_on_journey_input)
 	GameState.supplies_changed.connect(_refresh_bait)
 	GameState.save_failed.connect(func(message: String) -> void:
 		toast(message))
@@ -154,6 +158,17 @@ func _refresh_bait() -> void:
 
 
 func _refresh_journey() -> void:
+	var fish := GameState.tracked_fish()
+	%JourneyHint.mouse_filter = Control.MOUSE_FILTER_STOP if fish else Control.MOUSE_FILTER_IGNORE
+	%JourneyHint.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND if fish else Control.CURSOR_ARROW
+	%JourneyHint.visible = not _fishing_focus and (not _sailing_active or fish != null)
+	if fish:
+		var title := FishingTarget.title(fish, GameState.collection.has(String(fish.id)), GameState.fishing_target_trophy)
+		var weight := " от %.2f кг" % lerpf(fish.min_weight_kg, fish.max_weight_kg, 0.85) if GameState.fishing_target_trophy else ""
+		%JourneyHint.text = "%s%s\n%s" % [title, weight, FishingTarget.status(fish, WorldClock.hour, _habitat, GameState.boat_upgraded, GameState.BIOMES)]
+		%JourneyHint.tooltip_text = "Нажми, чтобы открыть цель в коллекции. Пока ждёшь клёва, можно ловить другие виды."
+		return
+	%JourneyHint.tooltip_text = "В коллекции можно выбрать личную цель: новый вид или золотой трофей"
 	var goal := GameState.next_goal()
 	if goal.is_empty():
 		%JourneyHint.text = "Путь рыболова завершён!\nОхоться за новыми рекордами."
@@ -163,9 +178,21 @@ func _refresh_journey() -> void:
 		int(goal["target"]), int(goal["reward"]), goal["hint"]]
 
 
+func _on_journey_input(event: InputEvent) -> void:
+	var clicked: bool = event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed
+	var touched: bool = event is InputEventScreenTouch and event.pressed
+	if (clicked or touched) and not _fishing_focus and not is_modal_open():
+		var fish := GameState.tracked_fish()
+		if fish:
+			_collection.reveal_fish(fish)
+			%JourneyHint.accept_event()
+
+
 func set_biome(biome: BiomeData) -> void:
+	_habitat = biome.habitat
 	_biome_label.text = biome.display_name
 	_biome_label.modulate = Color.WHITE
+	_refresh_journey()
 
 
 func set_travel_available(destination_name: String, locked := false) -> void:
@@ -197,7 +224,12 @@ func fade_in() -> void:
 	_travel_fade.hide()
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
+	_target_refresh += delta
+	if _target_refresh >= 1.0:
+		_target_refresh = 0.0
+		if GameState.tracked_fish():
+			_refresh_journey()
 	_clock_label.text = "%s · %s" % [WorldClock.clock_text(), WorldClock.phase_name()]
 	_touch_controls.visible = _touch_available and not is_modal_open()
 	%SailButton.visible = _sailing_available and not _fishing_focus and not is_modal_open()
@@ -211,7 +243,7 @@ func _process(_delta: float) -> void:
 func set_fishing_focus(active: bool) -> void:
 	_fishing_focus = active
 	%OrdersTracker.visible = not active and not _sailing_active
-	%JourneyHint.visible = not active and not _sailing_active
+	%JourneyHint.visible = not active and (not _sailing_active or GameState.tracked_fish() != null)
 	_refresh_bait()
 	%SailButton.visible = _sailing_available and not active
 	%SailStatus.visible = _sailing_active and not active
@@ -228,7 +260,7 @@ func set_sailing_available(available: bool, text := "На воду · B") -> voi
 func set_sailing_mode(active: bool) -> void:
 	_sailing_active = active
 	%OrdersTracker.visible = not active and not _fishing_focus
-	%JourneyHint.visible = not active and not _fishing_focus
+	%JourneyHint.visible = not _fishing_focus and (not active or GameState.tracked_fish() != null)
 	%SailStatus.visible = active and not _fishing_focus
 	if active:
 		_travel_button.hide()

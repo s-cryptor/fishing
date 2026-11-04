@@ -1,6 +1,6 @@
 class_name FishPortrait
 extends Control
-## Векторный портрет вида: работает в WebGL и масштабируется без текстур.
+## Запечённый портрет игровой модели; для неизвестных видов — векторный силуэт.
 
 var fish: FishData
 var discovered := true

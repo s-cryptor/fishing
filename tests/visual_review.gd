@@ -23,6 +23,8 @@ func _run() -> void:
 		printerr("Для скриншотов нужен графический рендер")
 		quit(1)
 		return
+	# Проверка не должна зависеть от фокуса нативного окна во время серии снимков.
+	debug.automated = true
 	DirAccess.make_dir_recursive_absolute(_directory)
 	var scene := load("res://scenes/main.tscn").instantiate() as Node3D
 	root.add_child(scene)

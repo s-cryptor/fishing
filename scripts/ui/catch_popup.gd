@@ -17,6 +17,8 @@ func _ready() -> void:
 	hide()
 	ModalFocus.watch(self, &"TakeButton")
 	%TakeButton.pressed.connect(close)
+	%TakeButton.focus_neighbor_top = %TakeButton.get_path_to(_swatch)
+	_swatch.focus_neighbor_bottom = _swatch.get_path_to(%TakeButton)
 
 
 func open(fish: FishData, weight_kg: float, is_new: bool) -> void:

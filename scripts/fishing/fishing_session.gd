@@ -126,6 +126,14 @@ func is_telegraphing() -> bool:
 	return state == State.FIGHTING and not is_thrashing and _thrash_timer <= THRASH_WARNING
 
 
+func telegraph_progress() -> float:
+	return clampf(1.0 - _thrash_timer / THRASH_WARNING, 0.0, 1.0) if is_telegraphing() else 0.0
+
+
+func bite_time_left() -> float:
+	return maxf(0.0, _timer) if state == State.BITING else 0.0
+
+
 func in_control_zone() -> bool:
 	return state == State.FIGHTING and not is_thrashing and tension >= CONTROL_MIN and tension <= CONTROL_MAX
 

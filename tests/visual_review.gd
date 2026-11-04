@@ -221,6 +221,7 @@ func _run() -> void:
 	state.inventory_changed.emit()
 	await _capture("basket_empty")
 	basket.hide()
+	await _touch_review(scene)
 	var pause: Node = get_first_node_in_group(&"pause_menu")
 	pause.toggle()
 	await _capture("pause_navigation")
@@ -231,10 +232,84 @@ func _run() -> void:
 	quit()
 
 
+func _touch_review(scene: Node3D) -> void:
+	# Синтетические состояния интерфейса: без tick(), расхода припасов и записи в сейв.
+	var hud: Node = scene.get_node("Hud")
+	var controller: Node = scene.get_node("FishingController")
+	var player: Node3D = scene.get_node("Player")
+	var camera: Node = scene.get_node("CameraRig")
+	var bobber: Node3D = scene.get_node("Bobber")
+	var debug := root.get_node("DebugTools")
+	var old_touch: bool = hud._touch_available
+	var old_debug_touch: bool = debug.touch_ui
+	var old_action: String = hud._action_name
+	hud._touch_available = true
+	hud._action_name = "кнопку"
+	debug.touch_ui = true
+	player.position = Vector3(0, 0.6, -9)
+	player.face_direction(Vector3.FORWARD, 1.0)
+	controller.set_process(false)
+	controller._start_charge()
+	controller._charge_time = 0.65
+	controller._update_preview()
+	hud.show_charge(0.65)
+	player.fishing_pose(true, 0.65, 0.0, false)
+	camera._process(10.0)
+	await _capture("touch_charge")
+	hud.hide_charge()
+	controller._preview.hide()
+	controller._cast_guide.hide()
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 21
+	var state := root.get_node("GameState")
+	var session := FishingSession.new(state.catalog.get_fish(&"pike"), 2.0, 16.0, state.gear, rng, 4.0)
+	controller.session = session
+	controller.phase = controller.get_script().get_script_constant_map()["Phase"]["SESSION"]
+	session.state = FishingSession.State.FIGHTING
+	bobber.anchor = Vector3(0, 0, -25)
+	bobber.position = bobber.anchor
+	bobber.mode = Bobber.Mode.FIGHT
+	bobber.show()
+	controller.line.attach(player.rod_tip, bobber)
+	camera.focus = bobber
+	camera._process(10.0)
+	hud.show_fight()
+	hud.set_hint("Держи кнопку — тяни · на рывке отпускай")
+	for mode in ["control", "warning", "release"]:
+		session.tension = 0.9 if mode == "release" else 0.58
+		session.control = 1.0 if mode == "control" else 0.0
+		session._thrash_timer = 0.2 if mode == "warning" else 1.0
+		session.is_thrashing = mode == "release"
+		bobber.warning = mode == "warning"
+		bobber.thrashing = session.is_thrashing
+		controller.line.tension = session.tension
+		hud.update_fight(session)
+		player.fishing_pose(true, 0.0, session.tension, mode == "control")
+		await _capture("touch_fight_%s" % mode)
+	session.state = FishingSession.State.BITING
+	session._timer = session.bite_window() * 0.7
+	bobber.mode = Bobber.Mode.BITE
+	bobber.warning = false
+	bobber.thrashing = false
+	hud.hide_fight()
+	hud.set_hint("Клюёт! Нажми «ПОДСЕЧЬ!»")
+	await _capture("touch_bite")
+	controller.session = null
+	controller.line.detach()
+	bobber.retract()
+	controller._to_idle()
+	controller.set_process(true)
+	hud._touch_available = old_touch
+	hud._action_name = old_action
+	debug.touch_ui = old_debug_touch
+	hud.show_idle_hint()
+
+
 func _capture(name: String) -> void:
 	# Даём завершиться открытию карточки и обновиться дополнительному viewport.
 	await create_timer(0.3).timeout
-	await RenderingServer.frame_post_draw
+	# macOS может не прислать frame_post_draw перекрытому окну: рисуем кадр явно.
+	RenderingServer.force_draw(false)
 	var error := root.get_texture().get_image().save_png(_directory.path_join(name + ".png"))
 	if error != OK:
 		printerr("Не удалось сохранить %s: %s" % [name, error_string(error)])
